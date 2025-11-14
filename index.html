@@ -449,7 +449,7 @@
             }
             sessionData['tradeLog'] = tradeLogData; // This is the VISIBLE log
             
-            // 4. The 'realistHistory' and 'tradeLogHistory' keys are already on sessionData (from step 1) and are NOT touched.
+            // 4. The 'realistHistory' key is already on sessionData (from step 1) and is NOT touched.
             
             localStorage.setItem('tradingSessionData', JSON.stringify(sessionData));
             alert("Session Saved! Your visible data and historical history are preserved.");
@@ -486,11 +486,11 @@
         
         function clearLogAndStartNewDay() {
             // 1. Check if the user wants to keep the data
-            const confirmClear = confirm("Are you sure you want to clear the on-screen Trade Log and R.E.A.L.I.S.T. Journal for a new day?\n\nNOTE: The current data will be saved to your browser session first, but the screen will be wiped.");
+            const confirmClear = confirm("Are you sure you want to clear the on-screen Trade Log and R.E.A.L.I.S.T. Journal for a new day?\n\nNOTE: The current R.E.A.L.I.S.T. data will be saved to history, but the screen will be wiped.");
             
             if (!confirmClear) return;
 
-            // --- DATA ACCUMULATION FOR HISTORY ---
+            // --- DATA ACCUMULATION FOR HISTORY (ONLY FOR REALIST) ---
 
             // A. Get current day's data (trades + R.E.A.L.I.S.T. + Date)
             const currentSessionData = {};
@@ -498,7 +498,7 @@
                 const element = document.getElementById(id);
                 if (element) { currentSessionData[id] = element.value; }
             });
-            
+
             // B. Load existing history
             const existingSession = getSessionData();
             let historicalRealistLog = existingSession['realistHistory'] || [];
@@ -523,7 +523,7 @@
             // D. Save the ENTIRE accumulated history and reset the current log state
             let updatedSessionData = currentSessionData;
             updatedSessionData['realistHistory'] = historicalRealistLog;
-            // Clear the tradeLog key so the screen is empty on reload/recalculation
+            // Clear the visible tradeLog key
             updatedSessionData['tradeLog'] = []; 
             // We NO LONGER save tradeLogHistory, to avoid conflicts.
             delete updatedSessionData['tradeLogHistory']; 
@@ -619,9 +619,19 @@
             let csv = [];
             const sessionDate = document.getElementById('sessionDate').value || 'N/A';
 
-            // 1. Define Header Row
+            // 1. Define Header Row (Hardcoded for stability)
+            const headerData = [
+                'Date',
+                'Trade #',
+                'Recommended TP/SL ($)',
+                'Actual Result ($)',
+                'Realized P&L ($)',
+                'Lockout',
+                'Screenshot Link',
+                'Notes / Rationale'
+            ];
             csv.push("--- CURRENT SESSION TRADE LOG ---");
-            csv.push('Date,Trade #,Actual Result ($),Screenshot Link,Notes / Rationale');
+            csv.push(headerData.map(item => getCleanedValue({value: item})).join(','));
 
             // 2. Get Data Rows (Only those with Actual Result)
             let tradesFound = 0;
@@ -632,21 +642,19 @@
                 if (resultInput && resultInput.value.trim() !== '') {
                     tradesFound++;
                     
-                    // Get row data
-                    const tradeNumber = i;
-                    const actualResult = resultInput.value;
-                    const screenshot = document.getElementById(`screenshot-${i}`).value;
-                    const notes = document.getElementById(`notes-${i}`).value;
-
-                    let finalRowData = [
+                    // Get row data directly by ID
+                    let rowData = [
                         sessionDate,
-                        tradeNumber,
-                        actualResult,
-                        screenshot,
-                        notes
+                        i, // Trade #
+                        document.getElementById(`recommended-tpsl-${i}`).innerText,
+                        resultInput.value,
+                        document.getElementById(`running-pl-${i}`).innerText,
+                        document.getElementById(`lockout-${i}`).innerText,
+                        document.getElementById(`screenshot-${i}`).value,
+                        document.getElementById(`notes-${i}`).value
                     ];
                     
-                    csv.push(finalRowData.map(item => getCleanedValue({value: item})).join(','));
+                    csv.push(rowData.map(item => getCleanedValue({value: item})).join(','));
                 }
             }
             
@@ -684,7 +692,9 @@
             // 2. Get Data Rows from SAVED LOG
             realistLog.forEach(entry => {
                 // Get the text description for the rating score
-                const ratingDescription = document.getElementById('ratingScore').querySelector(`option[value="${entry.ratingScore}"]`)?.innerText || 'N/A';
+                const ratingSelect = document.getElementById('ratingScore');
+                const ratingOption = ratingSelect.querySelector(`option[value="${entry.ratingScore}"]`);
+                const ratingDescription = ratingOption ? ratingOption.innerText : 'N/A';
                 
                 let rowData = [
                     entry.date || 'N/A',
