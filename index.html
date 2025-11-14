@@ -19,7 +19,7 @@
             background-color: #f9fafb;
             font-weight: 600;
         }
-        input[type="number"], input[type="text"], input[type="date"], select, textarea {
+        input[type="number"], input[type="text"], select, textarea {
             border-radius: 0.375rem;
             border: 1px solid #d1d5db;
             padding: 0.5rem;
@@ -418,9 +418,8 @@
                 }
             });
 
-            // 2. Save Trade Log Data
+            // 2. Save Trade Log Data (only visible data, as history is accumulated via clearLogAndStartNewDay)
             const tradeLogData = [];
-            // Iterate through all 50 possible rows to find existing data, even if cleared on screen
             for (let i = 1; i <= NUM_TRADES; i++) {
                 const resultInput = document.getElementById(`result-${i}`);
                 if (resultInput && resultInput.value.trim() !== '') {
@@ -431,16 +430,10 @@
                     });
                 }
             }
-            // Combine with any previously saved trade log data before overwriting
-            const existingSavedData = localStorage.getItem('tradingSessionData');
-            if (existingSavedData) {
-                const existingSession = JSON.parse(existingSavedData);
-                // We assume 'tradeLog' in the sessionData passed to storage is the currently accumulated list
-                // To keep it simple and avoid complex merging, we save the currently visible log.
-                // The history accumulation happens outside of this direct save, during the clearLog call.
-            }
-
             sessionData['tradeLog'] = tradeLogData;
+            
+            // NOTE: We rely on clearLogAndStartNewDay to append to historicalTradeLog, 
+            // so we don't need a separate history key for the R.E.A.L.I.S.T. data in this simple save.
             
             localStorage.setItem('tradingSessionData', JSON.stringify(sessionData));
             alert("Session Saved! You can close and reopen your browser.");
@@ -469,7 +462,7 @@
             }
 
 
-            // 2. Load Trade Log Data
+            // 2. Load Trade Log Data (only the current/latest visible log)
             if (sessionData.tradeLog) {
                 sessionData.tradeLog.forEach((trade, index) => {
                     const i = index + 1;
@@ -488,8 +481,9 @@
             
             if (!confirmClear) return;
 
-            // 2. SAVE the current data first (this ensures the current day's log is captured)
-            // Get the current on-screen session data to append to history
+            // --- DATA ACCUMULATION FOR HISTORY ---
+
+            // A. Get current day's data (trades + R.E.A.L.I.S.T. + Date)
             const currentSessionData = {};
             INPUT_ELEMENT_IDS.forEach(id => {
                 const element = document.getElementById(id);
@@ -509,25 +503,43 @@
                 }
             }
 
-            // Load existing history and append the current day's log
+            // B. Load existing history
             const existingSavedData = localStorage.getItem('tradingSessionData');
             let historicalTradeLog = [];
-            let updatedSessionData = currentSessionData;
+            let historicalRealistLog = [];
 
             if (existingSavedData) {
                 const existingSession = JSON.parse(existingSavedData);
-                // Use the existing historical trade log if it exists
-                historicalTradeLog = existingSession['tradeLog'] || [];
+                historicalTradeLog = existingSession['tradeLogHistory'] || existingSession['tradeLog'] || []; // Backwards compatibility for old tradeLog key
+                historicalRealistLog = existingSession['realistHistory'] || [];
             }
             
-            // Only append the current day's trades if there were any
+            // C. Append current day's trades to the trade history
             if (currentTradeLog.length > 0) {
-                 // Append the current day's log to the history
                 historicalTradeLog = historicalTradeLog.concat(currentTradeLog);
             }
             
-            // Save the ENTIRE accumulated history back to storage
-            updatedSessionData['tradeLog'] = historicalTradeLog;
+            // D. Append the current R.E.A.L.I.S.T. journal entry to the realist history
+            const currentRealistEntry = {
+                date: currentSessionData['sessionDate'] || new Date().toISOString().substring(0, 10),
+                ratingScore: currentSessionData['ratingScore'],
+                ratingReason: currentSessionData['ratingReason'],
+                earningsNote: currentSessionData['earningsNote'],
+                alignmentNote: currentSessionData['alignmentNote'],
+                learningNote: currentSessionData['learningNote'],
+                improvementNote: currentSessionData['improvementNote'],
+                sorryNote: currentSessionData['sorryNote'],
+                tomorrowPlan: currentSessionData['tomorrowPlan']
+            };
+            // Only save if the journal isn't completely empty (i.e., rating score was set)
+            if (currentRealistEntry.ratingScore !== '3' || currentRealistEntry.ratingReason !== '') {
+                 historicalRealistLog.push(currentRealistEntry);
+            }
+            
+            // E. Save the ENTIRE accumulated history back to storage
+            let updatedSessionData = currentSessionData;
+            updatedSessionData['tradeLogHistory'] = historicalTradeLog;
+            updatedSessionData['realistHistory'] = historicalRealistLog;
             localStorage.setItem('tradingSessionData', JSON.stringify(updatedSessionData));
 
 
@@ -614,9 +626,8 @@
             return text;
         }
 
-        // --- EXPORT TRADE LOG FUNCTION (PULLS ALL SAVED DATA) ---
+        // --- EXPORT TRADE LOG FUNCTION (MODIFIED TO PULL ALL SAVED DATA) ---
         function exportTradeLogToCSV() {
-            // NOTE: We rely on clearLogAndStartNewDay having combined the data into the 'tradeLog' array
             const savedData = localStorage.getItem('tradingSessionData');
             if (!savedData) {
                 alert("No saved session data found to export.");
@@ -624,8 +635,8 @@
             }
             
             const sessionData = JSON.parse(savedData);
-            // This 'tradeLog' now contains all historical entries across multiple days/sessions
-            const tradeLog = sessionData.tradeLog || []; 
+            // Now pull from the dedicated history key
+            const tradeLog = sessionData.tradeLogHistory || []; 
             
             if (tradeLog.length === 0) {
                  alert("Saved trade log is empty.");
@@ -634,13 +645,15 @@
 
             let csv = [];
             
-            // 1. Define Header Row (using the on-screen table header for labels + DATE)
+            // 1. Define Header Row
             csv.push("--- FULL SAVED TRADE HISTORY ---");
+            // Simplified header for the raw data we saved
             csv.push('Date,Trade #,Actual Result ($),Screenshot Link,Notes / Rationale');
 
 
             // 2. Get Data Rows from SAVED LOG
-            let tradeNumber = 1;
+            // We use a continuous trade number here (starts at 1)
+            let tradeNumber = 1; 
             tradeLog.forEach((trade) => {
                 
                 // Manually map to the simplified header order: Date, Trade #, Actual Result, Screenshot Link, Notes
@@ -662,41 +675,54 @@
             alert(`Downloaded ${tradeLog.length} saved trade entries.`);
         }
 
-        // --- EXPORT REALIST JOURNAL FUNCTION (SEPARATE) ---
+        // --- EXPORT REALIST JOURNAL FUNCTION (MODIFIED TO PULL ALL SAVED DATA) ---
         function exportJournalToCSV() {
-            let csv = [];
-            csv.push('Journal Field,Value');
+            const savedData = localStorage.getItem('tradingSessionData');
+            if (!savedData) {
+                alert("No saved session data found to export.");
+                return;
+            }
             
-            const realistData = [
-                { label: 'Session Date', elementId: 'sessionDate' },
-                { label: 'R - Rating', elementId: 'ratingScore' },
-                { label: 'R - Rating Reason', elementId: 'ratingReason' },
-                { label: 'E - Earnings Note', elementId: 'earningsNote' },
-                { label: 'A - Alignment Note', elementId: 'alignmentNote' },
-                { label: 'L - Learning Note', elementId: 'learningNote' },
-                { label: 'I - Improvement Note', elementId: 'improvementNote' },
-                { label: 'S - Sorry Note', elementId: 'sorryNote' },
-                { label: 'T - Tomorrow Plan', elementId: 'tomorrowPlan' },
-            ];
+            const sessionData = JSON.parse(savedData);
+            // Pull from the dedicated R.E.A.L.I.S.T. history key
+            const realistLog = sessionData.realistHistory || []; 
+            
+            if (realistLog.length === 0) {
+                 alert("Saved R.E.A.L.I.S.T. journal history is empty.");
+                 return;
+            }
 
-            realistData.forEach(item => {
-                const element = document.getElementById(item.elementId);
-                let value = '';
 
-                if (element.tagName === 'SELECT') {
-                    value = element.value + ' - ' + element.options[element.selectedIndex].text;
-                } else {
-                    value = element.value;
-                }
+            let csv = [];
+            
+            // 1. Define Header Row
+            csv.push('--- FULL SAVED REALIST JOURNAL HISTORY ---');
+            csv.push('Date,Rating,Rating Reason,Earnings Note,Alignment Note,Learning Note,Improvement Note,Sorry Note,Tomorrow Plan');
+
+
+            // 2. Get Data Rows from SAVED LOG
+            realistLog.forEach(entry => {
+                let rowData = [
+                    entry.date || 'N/A',
+                    entry.ratingScore + ' - ' + (document.getElementById('ratingScore').querySelector(`option[value="${entry.ratingScore}"]`)?.innerText || 'N/A'),
+                    entry.ratingReason,
+                    entry.earningsNote,
+                    entry.alignmentNote,
+                    entry.learningNote,
+                    entry.improvementNote,
+                    entry.sorryNote,
+                    entry.tomorrowPlan
+                ];
                 
-                csv.push(`${getCleanedValue({innerText: item.label})},${getCleanedValue({value: value})}`);
+                csv.push(rowData.map(item => getCleanedValue({value: item})).join(','));
             });
             
 
             const csvString = csv.join('\n');
-            const filename = `REALIST_Journal_${new Date().toLocaleDateString('en-CA').replace(/-/g, '')}.csv`;
+            const filename = `REALIST_Journal_History_${new Date().toLocaleDateString('en-CA').replace(/-/g, '')}.csv`;
             
             downloadCSV(csvString, filename);
+            alert(`Downloaded ${realistLog.length} saved R.E.A.L.I.S.T. entries.`);
         }
         
         // --- CORE CALCULATION LOGIC ---
