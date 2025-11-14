@@ -639,7 +639,6 @@
             
             const sessionData = JSON.parse(savedData);
             // PULLS FROM THE HISTORICAL ARRAY, CHECKING OLD KEY FOR ROBUSTNESS
-            // FIX: Check dedicated history key first, then fall back to the old 'tradeLog' key if it exists
             const tradeLog = sessionData.tradeLogHistory || sessionData.tradeLog || []; 
             
             if (tradeLog.length === 0) {
