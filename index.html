@@ -510,8 +510,16 @@
                 sorryNote: currentSessionData['sorryNote'],
                 tomorrowPlan: currentSessionData['tomorrowPlan']
             };
-            // Only save if the journal isn't completely empty
-            if (currentRealistEntry.ratingScore !== '3' || currentRealistEntry.ratingReason !== '' || currentRealistEntry.earningsNote !== '') {
+            
+            // FIX: Check ALL fields, not just the first three
+            if (currentRealistEntry.ratingScore !== '3' || 
+                (currentRealistEntry.ratingReason || '').trim() !== '' || 
+                (currentRealistEntry.earningsNote || '').trim() !== '' ||
+                (currentRealistEntry.alignmentNote || '').trim() !== '' ||
+                (currentRealistEntry.learningNote || '').trim() !== '' ||
+                (currentRealistEntry.improvementNote || '').trim() !== '' ||
+                (currentRealistEntry.sorryNote || '').trim() !== '' ||
+                (currentRealistEntry.tomorrowPlan || '').trim() !== '') {
                  historicalRealistLog.push(currentRealistEntry);
             }
             
@@ -555,30 +563,8 @@
             alert("New Trading Day Started. The R.E.A.L.I.S.T. history is saved and ready for export!");
         }
 
-        function clearAllSavedData() {
-             const confirmDelete = confirm("WARNING: This will permanently DELETE ALL saved historical trade data from your browser. Have you exported your data?\n\nClick OK to permanently delete the entire saved session history.");
-            
-            if (!confirmDelete) return;
-
-            localStorage.removeItem('tradingSessionData');
-            
-            // Clear the currently visible log and recalculate to reflect the empty history
-            for (let i = 1; i <= NUM_TRADES; i++) {
-                if (document.getElementById(`result-${i}`)) {
-                    document.getElementById(`result-${i}`).value = '';
-                    document.getElementById(`screenshot-${i}`).value = '';
-                    document.getElementById(`notes-${i}`).value = '';
-                }
-            }
-            
-            // Reset Date to Today
-            document.getElementById('sessionDate').value = new Date().toISOString().substring(0, 10);
-            
-            calculate();
-            alert("All saved historical data has been permanently deleted. Your session is now empty.");
-        }
-        // --- END SESSION MANAGEMENT LOGIC ---
-
+        // REMOVED 'clearAllSavedData' function as the button was removed.
+        // --- (REMOVED) clearAllSavedData() ---
 
         // Utility function for downloading CSV
         function downloadCSV(csvString, filename) {
