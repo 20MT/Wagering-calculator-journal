@@ -1,52 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wagering Calculator & Journal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* (your original styles unchanged) */
-        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        .table-cell { padding: 0.75rem; border: 1px solid #e5e7eb; text-align: center; }
-        .header-cell { background-color: #f9fafb; font-weight: 600; }
-        input[type="number"], input[type="text"], select, textarea { border-radius: 0.375rem; border: 1px solid #d1d5db; padding: 0.5rem; width: 100%; box-sizing: border-box; transition: background-color 0.3s, border-color 0.3s, color 0.3s; }
-        .journal-input { text-align: left; padding-left: 0.5rem; }
-        .lockout-red { color: #dc2626; font-weight: 700; }
-        .profit-green { color: #16a34a; }
-        .loss-red { color: #dc2626; }
-        .disabled-row { background-color: #f3f4f6; opacity: 0.7; }
-        #ratingScore { max-width: 100px; text-align: center; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%236b7280' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 8px 10px; }
-        /* Dark mode styles (unchanged) */
-        body.dark-mode { background-color: #111827; color: #e5e7eb; }
-        body.dark-mode .max-w-7xl { background-color: #1f2937; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5), 0 2px 4px -2px rgba(0,0,0,0.5); }
-        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 { color: #f3f4f6; }
-        body.dark-mode .border-gray-200, body.dark-mode .border { border-color: #374151 !important; }
-        body.dark-mode .bg-gray-50, body.dark-mode .bg-gray-100 { background-color: #374151 !important; border-color: #4b5563; }
-        body.dark-mode .bg-white, body.dark-mode .bg-blue-50 { background-color: #4b5563 !important; }
-        body.dark-mode .instruction-box { background-color: #1f2937 !important; border-color: #3b82f6 !important; color: #dbeafe !important; }
-        body.dark-mode .table-cell { border-color: #4b5563; }
-        body.dark-mode .header-cell { background-color: #374151; color: #f3f4f6; }
-        body.dark-mode input[type="number"], body.dark-mode input[type="text"], body.dark-mode input[type="date"], body.dark-mode select, body.dark-mode textarea { background-color: #1f2937; color: #f3f4f6; border-color: #4b5563; }
-        body.dark-mode .text-gray-700 { color: #d1d5db; }
-        body.dark-mode .text-gray-800, body.dark-mode .text-gray-900 { color: #f3f4f6; }
-        body.dark-mode .disabled-row { background-color: #1f2937; opacity: 0.5; }
-        body.dark-mode #ratingScore { background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23f3f4f6' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e"); }
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+        }
+        .table-cell {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        .header-cell {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+        input[type="number"], input[type="text"], select, textarea {
+            border-radius: 0.375rem;
+            border: 1px solid #d1d5db;
+            padding: 0.5rem;
+            width: 100%;
+            box-sizing: border-box;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+        /* Style for new text/journal fields */
+        .journal-input {
+            text-align: left;
+            padding-left: 0.5rem;
+        }
+        .lockout-red {
+            color: #dc2626;
+            font-weight: 700;
+        }
+        .profit-green {
+            color: #16a34a;
+        }
+        .loss-red {
+            color: #dc2626;
+        }
+        .disabled-row {
+            background-color: #f3f4f6;
+            opacity: 0.7;
+        }
+        /* Custom style for the rating select box */
+        #ratingScore {
+            max-width: 100px;
+            text-align: center;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%236b7280' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 8px 10px;
+        }
+
+        /* --- DARK MODE STYLES --- */
+        body.dark-mode {
+            background-color: #111827; /* Dark background */
+            color: #e5e7eb; /* Light text */
+        }
+        body.dark-mode .max-w-7xl {
+            background-color: #1f2937; /* Darker card background */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+        }
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
+            color: #f3f4f6;
+        }
+        body.dark-mode .border-gray-200, body.dark-mode .border {
+            border-color: #374151 !important;
+        }
+        body.dark-mode .bg-gray-50, body.dark-mode .bg-gray-100 {
+            background-color: #374151 !important;
+            border-color: #4b5563;
+        }
+        body.dark-mode .bg-white, body.dark-mode .bg-blue-50 {
+            background-color: #4b5563 !important;
+        }
+        /* Instruction Box Dark Mode Override */
+        body.dark-mode .instruction-box {
+            background-color: #1f2937 !important; /* Very dark background for contrast */
+            border-color: #3b82f6 !important; /* Blue border */
+            color: #dbeafe !important; /* Very light blue text */
+        }
+        /* Standard element overrides */
+        body.dark-mode .table-cell {
+            border-color: #4b5563;
+        }
+        body.dark-mode .header-cell {
+            background-color: #374151;
+            color: #f3f4f6;
+        }
+        body.dark-mode input[type="number"], body.dark-mode input[type="text"], body.dark-mode input[type="date"], body.dark-mode select, body.dark-mode textarea {
+            background-color: #1f2937;
+            color: #f3f4f6;
+            border-color: #4b5563;
+        }
+        body.dark-mode .text-gray-700 {
+            color: #d1d5db; /* Lighter labels */
+        }
+        body.dark-mode .text-gray-800, body.dark-mode .text-gray-900 {
+            color: #f3f4f6;
+        }
+        body.dark-mode .disabled-row {
+            background-color: #1f2937;
+            opacity: 0.5;
+        }
+        body.dark-mode #ratingScore {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23f3f4f6' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e"); /* Lighten dropdown arrow */
+        }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50 text-gray-800 p-4 sm:p-6 md:p-8">
     <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-md p-6">
         <header class="mb-6 pb-4 border-b border-gray-200 flex justify-between items-center">
             <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Wagering Calculator & Journal</h1>
             <button id="darkModeToggle" onclick="toggleDarkMode()" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition duration-150">
-                <svg id="sunIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                <svg id="moonIcon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                <svg id="sunIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg id="moonIcon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
         </header>
-
+        
         <div id="instructionsBox" class="mt-2 p-3 bg-blue-100 border border-blue-200 rounded-lg text-sm text-blue-900 instruction-box">
             <div id="instructionsHeader" class="font-semibold mb-1 cursor-pointer flex justify-between items-center" onclick="toggleInstructions()">
                 <h2>How to Use This Tool:</h2>
@@ -70,17 +151,120 @@
             </div>
 
             <div class="flex justify-start items-center flex-wrap gap-3 pt-2 border-t border-gray-300">
-                 <button onclick="saveSession()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">💾 Save Current Session</button>
-                 <button onclick="clearLogAndStartNewDay()" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">✨ Clear Log & Start New Day</button>
-                 <button onclick="clearAllSavedData()" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">🗑️ Clear All Saved Data</button>
-                <button id="downloadTradeLogButton" onclick="exportTradeLogToCSV()" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">Download Trade Log (CSV)</button>
-                <button id="downloadJournalButton" onclick="exportJournalToCSV()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">Download R.E.A.L.I.S.T. Journal (CSV)</button>
+                 <button 
+                    onclick="saveSession()" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                    💾 Save Current Session
+                </button>
+                 <button 
+                    onclick="clearLogAndStartNewDay()" 
+                    class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                    ✨ Clear Log & Start New Day
+                </button>
+                 <button 
+                    onclick="clearAllSavedData()" 
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                    🗑️ Clear All Saved Data
+                </button>
+                <button 
+                    id="downloadTradeLogButton"
+                    onclick="exportTradeLogToCSV()" 
+                    class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                    Download Trade Log (CSV)
+                </button>
+                <button 
+                    id="downloadJournalButton"
+                    onclick="exportJournalToCSV()" 
+                    class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                    Download R.E.A.L.I.S.T. Journal (CSV)
+                </button>
             </div>
         </div>
 
-        <!-- (the rest of the HTML UI content is unchanged; kept for brevity in this snippet) -->
-        <!-- ... account setup, trade setup, grid panels, trade log table, journal ... -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6">
+            <div class="bg-gray-50 p-4 rounded-lg border">
+                <h3 class="font-semibold text-lg mb-3">Account Setup</h3>
+                <div class="space-y-3">
+                    <div>
+                        <label for="currentBalance" class="block text-sm font-medium text-gray-700">Current Balance ($)</label>
+                        <input type="number" id="currentBalance" value="50000" class="mt-1">
+                    </div>
+                    <div>
+                        <label for="maxLossLimit" class="block text-sm font-medium text-gray-700">Maximum Loss Limit ($)</label>
+                        <input type="number" id="maxLossLimit" value="48000" class="mt-1">
+                    </div>
+                    <div>
+                        <label for="lossLockoutPercent" class="block text-sm font-medium text-gray-700">Loss Lockout %</label>
+                        <input type="number" id="lossLockoutPercent" value="0.10" step="0.001" class="mt-1">
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg border">
+                <h3 class="font-semibold text-lg mb-3">Trade Setup</h3>
+                <div class="space-y-3">
+                    <div>
+                        <label for="tradeRange" class="block text-sm font-medium text-gray-700">Trade Range (Points)</label>
+                        <input type="number" id="tradeRange" value="10" class="mt-1">
+                    </div>
+                     <div class="text-sm text-gray-500 pt-2">
+                        <p>Point Value is fixed at $2.00 for MNQ.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg border">
+                <h3 class="font-semibold text-lg mb-3">Ladder Logic</h3>
+                <div class="space-y-3">
+                    <div>
+                        <label for="autoLadder" class="block text-sm font-medium text-gray-700">Auto Ladder when Green?</label>
+                        <select id="autoLadder" class="mt-1">
+                            <option value="true" selected>On</option>
+                            <option value="false">Off</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="minProfitToKeep" class="block text-sm font-medium text-gray-700">Absolute minimum profit ($)</label>
+                        <input type="number" id="minProfitToKeep" value="0" class="mt-1"> 
+                    </div>
+                    <div>
+                        <label for="lockInPercent" class="block text-sm font-medium text-gray-700">Lock-in % of current green</label>
+                        <input type="number" id="lockInPercent" value="0.75" step="0.01" class="mt-1">
+                    </div>
+                </div>
+            </div>
+             <div class="bg-gray-50 p-4 rounded-lg border">
+                <h3 class="font-semibold text-lg mb-3">Sizing Parameters</h3>
+                 <div class="space-y-3">
+                    <div>
+                        <label for="roundDown" class="block text-sm font-medium text-gray-700">Round down to nearest $</label>
+                        <input type="number" id="roundDown" value="5" step="1" class="mt-1">
+                    </div>
+                    <div>
+                        <label for="feePerContract" class="block text-sm font-medium text-gray-700">Fee per Contract ($)</label>
+                        <input type="number" id="feePerContract" value="0.74" step="0.01" class="mt-1">
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6">
+            <div class="bg-emerald-600 text-white p-4 rounded-lg shadow-lg">
+                <p class="text-sm font-medium text-emerald-200">Full Stack ($)</p>
+                <p id="fullStack" class="text-2xl font-bold"></p>
+            </div>
+            <div class="bg-amber-500 text-white p-4 rounded-lg shadow-lg">
+                <p class="text-sm font-medium text-amber-100">Daily Loss Lockout ($)</p>
+                <p id="dailyLossLockout" class="text-2xl font-bold"></p>
+            </div>
+            <div class="bg-blue-600 text-white p-4 rounded-lg shadow-lg">
+                <p id="tpslLabel" class="text-sm font-medium text-blue-200">TP/SL SETTINGS ($)</p>
+                <p id="nextTradeSize" class="text-2xl font-bold"></p>
+            </div>
+            <div class="bg-violet-600 text-white p-4 rounded-lg shadow-lg">
+                <p class="text-sm font-medium text-violet-200">NUMBER OF CONTRACTS</p>
+                <p id="numContracts" class="text-2xl font-bold">0</p>
+            </div>
+        </div>
+        
         <div class="mt-8 pt-6 border-t">
              <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Trade Log</h2>
             <div class="overflow-x-auto">
@@ -96,18 +280,19 @@
                             <th class="table-cell header-cell bg-gray-100">Notes / Rationale</th>
                         </tr>
                     </thead>
-                    <tbody id="trade-rows" class="bg-white divide-y divide-gray-200"></tbody>
+                    <tbody id="trade-rows" class="bg-white divide-y divide-gray-200">
+                        </tbody>
                 </table>
             </div>
         </div>
-
+        
         <hr class="mt-12 mb-6 border-gray-300">
 
-        <!-- R.E.A.L.I.S.T. Journal (unchanged) -->
         <div class="mt-8 p-6 bg-gray-100 rounded-xl shadow-inner">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">THE R.E.A.L.I.S.T. JOURNAL 📝</h2>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                THE R.E.A.L.I.S.T. JOURNAL 📝
+            </h2>
             <div class="space-y-6">
-                <!-- (journal sections: ratingScore, ratingReason, earningsNote, etc.) -->
                 <div class="p-4 bg-white rounded-lg border border-gray-200">
                     <h3 class="font-semibold text-lg text-red-600 mb-2">R - Rate</h3>
                     <div class="flex items-center space-x-4 mb-3">
@@ -126,13 +311,12 @@
                     </div>
                 </div>
 
-                <!-- (other journal items remain unchanged) -->
                 <div class="p-4 bg-white rounded-lg border border-gray-200">
                     <h3 class="font-semibold text-lg text-blue-600 mb-2">E - Earnings</h3>
                     <label for="earningsNote" class="block text-sm font-medium text-gray-700 mb-1">Were you profitable today? If not, what was the loss and why?</label>
                     <textarea id="earningsNote" rows="2" class="journal-input" placeholder="I was profitable by $175 and locked out according to the wagering strategy..."></textarea>
                 </div>
-
+                
                 <div class="p-4 bg-white rounded-lg border border-gray-200">
                     <h3 class="font-semibold text-lg text-emerald-600 mb-2">A - Alignment</h3>
                     <label for="alignmentNote" class="block text-sm font-medium text-gray-700 mb-1">Did you follow your trading strategy today? If not, what caused you to go off-strategy?</label>
@@ -176,6 +360,7 @@
             localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
             updateToggleIcon(isDarkMode);
         }
+
         function updateToggleIcon(isDarkMode) {
             const sunIcon = document.getElementById('sunIcon');
             const moonIcon = document.getElementById('moonIcon');
@@ -184,6 +369,7 @@
                 moonIcon.classList.toggle('hidden', !isDarkMode);
             }
         }
+
         function loadDarkModePreference() {
             if (localStorage.getItem('darkMode') === 'enabled') {
                 document.body.classList.add('dark-mode');
@@ -194,118 +380,101 @@
         }
         // --- DARK MODE LOGIC END ---
 
+
         const NUM_TRADES = 50;
         const INPUT_ELEMENT_IDS = [
-            'currentBalance','maxLossLimit','lossLockoutPercent','tradeRange','autoLadder',
-            'minProfitToKeep','lockInPercent','roundDown','feePerContract',
-            'ratingScore','ratingReason','earningsNote','alignmentNote','learningNote',
-            'improvementNote','sorryNote','tomorrowPlan','sessionDate'
+            // Settings
+            'currentBalance', 'maxLossLimit', 'lossLockoutPercent', 'tradeRange', 'autoLadder', 
+            'minProfitToKeep', 'lockInPercent', 'roundDown', 'feePerContract',
+            // R.E.A.L.I.S.T. Journal
+            'ratingScore', 'ratingReason', 'earningsNote', 'alignmentNote', 'learningNote', 
+            'improvementNote', 'sorryNote', 'tomorrowPlan',
+            // Date
+            'sessionDate'
         ];
 
-        // -----------------------------
-        // LOCAL STORAGE SHAPE & HELPERS
-        // -----------------------------
-        const STORAGE_KEY = 'tradingSessionData';
+        // --- ACCORDION LOGIC ---
+        function toggleInstructions() {
+            const content = document.getElementById('instructionsContent');
+            const arrow = document.getElementById('toggleArrow');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                arrow.classList.add('rotate-180'); // Rotate arrow up
+            } else {
+                content.classList.add('hidden');
+                arrow.classList.remove('rotate-180'); // Rotate arrow down
+            }
+        }
 
+        // --- SESSION MANAGEMENT LOGIC ---
+        
+        // Helper function to safely get the session data
         function getSessionData() {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) {
-                // Ensure default structure
-                const base = {
-                    // current visible log & settings
-                    tradeLog: [],
-                    // flattened, archived trades across days
-                    tradeHistoryFlat: [],
-                    // journal history array
-                    realistHistory: [],
-                    // arbitrary other keys for settings will be placed at top-level
-                };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
-                return base;
+            const savedData = localStorage.getItem('tradingSessionData');
+            if (!savedData) {
+                return {}; // Return empty object if nothing is saved
             }
             try {
-                const parsed = JSON.parse(raw);
-                // Ensure arrays exist
-                if (!Array.isArray(parsed.tradeLog)) parsed.tradeLog = [];
-                if (!Array.isArray(parsed.tradeHistoryFlat)) parsed.tradeHistoryFlat = [];
-                if (!Array.isArray(parsed.realistHistory)) parsed.realistHistory = [];
-                return parsed;
+                return JSON.parse(savedData);
             } catch (e) {
-                console.error('Failed to parse session data, resetting:', e);
-                const base = { tradeLog: [], tradeHistoryFlat: [], realistHistory: [] };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
-                return base;
+                console.error("Failed to parse session data:", e);
+                return {}; // Return empty object on parse error
             }
         }
 
-        function setSessionData(obj) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-        }
-
-        // Append current visible trades to tradeHistoryFlat with date stamp
-        function appendCurrentTradesToHistory() {
-            const sessionData = getSessionData();
-            const sessionDate = document.getElementById('sessionDate').value || (new Date().toISOString().substring(0,10));
-            for (let i = 1; i <= NUM_TRADES; i++) {
-                const resultInput = document.getElementById(`result-${i}`);
-                if (resultInput && resultInput.value.trim() !== '') {
-                    const tradeObj = {
-                        date: sessionDate,
-                        tradeNumber: i,
-                        result: resultInput.value,
-                        screenshot: (document.getElementById(`screenshot-${i}`) || {}).value || '',
-                        notes: (document.getElementById(`notes-${i}`) || {}).value || ''
-                    };
-                    sessionData.tradeHistoryFlat.push(tradeObj);
-                }
-            }
-            setSessionData(sessionData);
-        }
-
-        // -----------------------------
-        // SAVE / LOAD VISIBLE SESSION
-        // -----------------------------
+        // (FIXED) This button saves the VISIBLE state AND preserves history
         function saveSession() {
-            // load existing data
+            // 1. Load existing data, including history keys
             const sessionData = getSessionData();
-            // update settings & journal values (top-level keys)
+
+            // 2. Update all settings and journal fields
             INPUT_ELEMENT_IDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) sessionData[id] = el.value;
+                const element = document.getElementById(id);
+                if (element) {
+                    sessionData[id] = element.value;
+                }
             });
-            // save visible trade log
+
+            // 3. Save only the *visible* Trade Log data
             const tradeLogData = [];
             for (let i = 1; i <= NUM_TRADES; i++) {
                 const resultInput = document.getElementById(`result-${i}`);
                 if (resultInput && resultInput.value.trim() !== '') {
                     tradeLogData.push({
-                        tradeNumber: i,
                         result: resultInput.value,
-                        screenshot: (document.getElementById(`screenshot-${i}`) || {}).value || '',
-                        notes: (document.getElementById(`notes-${i}`) || {}).value || ''
+                        screenshot: document.getElementById(`screenshot-${i}`).value,
+                        notes: document.getElementById(`notes-${i}`).value,
                     });
                 }
             }
-            sessionData.tradeLog = tradeLogData;
-            setSessionData(sessionData);
-            alert("Session Saved! Visible trade log and settings stored locally.");
+            sessionData['tradeLog'] = tradeLogData; // This is the VISIBLE log
+            
+            // 4. The 'realistHistory' and 'tradeLogHistory' keys are already on sessionData (from step 1) and are NOT touched.
+            
+            localStorage.setItem('tradingSessionData', JSON.stringify(sessionData));
+            alert("Session Saved! Your visible data and historical history are preserved.");
         }
 
         function loadSession() {
             const sessionData = getSessionData();
-            // load settings & journal
+
+            // 1. Load Settings and Journal
             INPUT_ELEMENT_IDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (el && sessionData[id] !== undefined) el.value = sessionData[id];
+                const element = document.getElementById(id);
+                if (element && sessionData[id] !== undefined) {
+                    element.value = sessionData[id];
+                }
             });
-            // default sessionDate if missing
-            if (!sessionData.sessionDate || sessionData.sessionDate === '') {
-                document.getElementById('sessionDate').value = new Date().toISOString().substring(0,10);
+            // If sessionDate isn't in saved data or is blank, set today's date
+            if (!sessionData['sessionDate'] || sessionData['sessionDate'] === '') {
+                 document.getElementById('sessionDate').value = new Date().toISOString().substring(0, 10);
             }
-            // load visible trade log (only current/latest)
-            if (Array.isArray(sessionData.tradeLog)) {
-                sessionData.tradeLog.forEach((trade, idx) => {
-                    const i = trade.tradeNumber || (idx + 1);
+
+
+            // 2. Load Trade Log Data (only the current/latest visible log)
+            if (sessionData.tradeLog) {
+                sessionData.tradeLog.forEach((trade, index) => {
+                    const i = index + 1;
                     if (document.getElementById(`result-${i}`)) {
                         document.getElementById(`result-${i}`).value = trade.result || '';
                         document.getElementById(`screenshot-${i}`).value = trade.screenshot || '';
@@ -314,41 +483,55 @@
                 });
             }
         }
-
-        // -----------------------------
-        // CLEAR / ARCHIVE BEHAVIOR
-        // -----------------------------
+        
         function clearLogAndStartNewDay() {
-            const confirmClear = confirm("Are you sure you want to clear the on-screen Trade Log and R.E.A.L.I.S.T. Journal for a new day?\n\nThis will ARCHIVE the current visible trades into history, then clear the screen.");
+            // 1. Check if the user wants to keep the data
+            const confirmClear = confirm("Are you sure you want to clear the on-screen Trade Log and R.E.A.L.I.S.T. Journal for a new day?\n\nNOTE: The current data will be saved to your browser session first, but the screen will be wiped.");
+            
             if (!confirmClear) return;
 
-            // 1) Append visible trades to flat history
-            appendCurrentTradesToHistory();
+            // --- DATA ACCUMULATION FOR HISTORY ---
 
-            // 2) Append the journal to realistHistory if not empty
-            const sessionData = getSessionData();
-            const currentSessionDate = (document.getElementById('sessionDate') || {}).value || new Date().toISOString().substring(0,10);
+            // A. Get current day's data (trades + R.E.A.L.I.S.T. + Date)
+            const currentSessionData = {};
+            INPUT_ELEMENT_IDS.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) { currentSessionData[id] = element.value; }
+            });
+            
+            // B. Load existing history
+            const existingSession = getSessionData();
+            let historicalRealistLog = existingSession['realistHistory'] || [];
+            
+            // C. Append the current R.E.A.L.I.S.T. journal entry to the realist history
             const currentRealistEntry = {
-                date: currentSessionDate,
-                ratingScore: (document.getElementById('ratingScore') || {}).value || '',
-                ratingReason: (document.getElementById('ratingReason') || {}).value || '',
-                earningsNote: (document.getElementById('earningsNote') || {}).value || '',
-                alignmentNote: (document.getElementById('alignmentNote') || {}).value || '',
-                learningNote: (document.getElementById('learningNote') || {}).value || '',
-                improvementNote: (document.getElementById('improvementNote') || {}).value || '',
-                sorryNote: (document.getElementById('sorryNote') || {}).value || '',
-                tomorrowPlan: (document.getElementById('tomorrowPlan') || {}).value || ''
+                date: currentSessionData['sessionDate'] || new Date().toISOString().substring(0, 10),
+                ratingScore: currentSessionData['ratingScore'],
+                ratingReason: currentSessionData['ratingReason'],
+                earningsNote: currentSessionData['earningsNote'],
+                alignmentNote: currentSessionData['alignmentNote'],
+                learningNote: currentSessionData['learningNote'],
+                improvementNote: currentSessionData['improvementNote'],
+                sorryNote: currentSessionData['sorryNote'],
+                tomorrowPlan: currentSessionData['tomorrowPlan']
             };
-            // only push if there's meaningful content (not default)
-            if (currentRealistEntry.ratingScore !== '3' || currentRealistEntry.ratingReason.trim() !== '' || currentRealistEntry.earningsNote.trim() !== '') {
-                sessionData.realistHistory.push(currentRealistEntry);
+            // Only save if the journal isn't completely empty
+            if (currentRealistEntry.ratingScore !== '3' || currentRealistEntry.ratingReason !== '' || currentRealistEntry.earningsNote !== '') {
+                 historicalRealistLog.push(currentRealistEntry);
             }
+            
+            // D. Save the ENTIRE accumulated history and reset the current log state
+            let updatedSessionData = currentSessionData;
+            updatedSessionData['realistHistory'] = historicalRealistLog;
+            // Clear the tradeLog key so the screen is empty on reload/recalculation
+            updatedSessionData['tradeLog'] = []; 
+            // We NO LONGER save tradeLogHistory, to avoid conflicts.
+            delete updatedSessionData['tradeLogHistory']; 
+            
+            localStorage.setItem('tradingSessionData', JSON.stringify(updatedSessionData));
 
-            // clear visible tradeLog (so screen is empty)
-            sessionData.tradeLog = [];
-            setSessionData(sessionData);
 
-            // 3) Clear inputs on screen
+            // 3. Clear all inputs on screen
             for (let i = 1; i <= NUM_TRADES; i++) {
                 if (document.getElementById(`result-${i}`)) {
                     document.getElementById(`result-${i}`).value = '';
@@ -356,7 +539,8 @@
                     document.getElementById(`notes-${i}`).value = '';
                 }
             }
-            // reset journal fields
+            
+            // Reset Journal inputs to default/empty state
             document.getElementById('ratingScore').value = '3';
             document.getElementById('ratingReason').value = '';
             document.getElementById('earningsNote').value = '';
@@ -365,18 +549,25 @@
             document.getElementById('improvementNote').value = '';
             document.getElementById('sorryNote').value = '';
             document.getElementById('tomorrowPlan').value = '';
-            // set date to today
-            document.getElementById('sessionDate').value = new Date().toISOString().substring(0,10);
-            // recalc UI
+            
+            // Set session date to today for the new day
+            document.getElementById('sessionDate').value = new Date().toISOString().substring(0, 10);
+
+
+            // 4. Re-calculate to show the clean log and reset Trade #1's recommended size
             calculate();
-            alert("New Trading Day Started. Today's trades were archived and are now available in the full export.");
+
+            alert("New Trading Day Started. The R.E.A.L.I.S.T. history is saved and ready for export!");
         }
 
         function clearAllSavedData() {
-            const confirmDelete = confirm("WARNING: This will permanently DELETE ALL saved historical trade data from your browser. Have you exported your data?\n\nClick OK to permanently delete the entire saved session history.");
+             const confirmDelete = confirm("WARNING: This will permanently DELETE ALL saved historical trade data from your browser. Have you exported your data?\n\nClick OK to permanently delete the entire saved session history.");
+            
             if (!confirmDelete) return;
-            localStorage.removeItem(STORAGE_KEY);
-            // clear visible screen as well
+
+            localStorage.removeItem('tradingSessionData');
+            
+            // Clear the currently visible log and recalculate to reflect the empty history
             for (let i = 1; i <= NUM_TRADES; i++) {
                 if (document.getElementById(`result-${i}`)) {
                     document.getElementById(`result-${i}`).value = '';
@@ -384,39 +575,22 @@
                     document.getElementById(`notes-${i}`).value = '';
                 }
             }
-            document.getElementById('sessionDate').value = new Date().toISOString().substring(0,10);
-            // reset journal
-            document.getElementById('ratingScore').value = '3';
-            document.getElementById('ratingReason').value = '';
-            document.getElementById('earningsNote').value = '';
-            document.getElementById('alignmentNote').value = '';
-            document.getElementById('learningNote').value = '';
-            document.getElementById('improvementNote').value = '';
-            document.getElementById('sorryNote').value = '';
-            document.getElementById('tomorrowPlan').value = '';
+            
+            // Reset Date to Today
+            document.getElementById('sessionDate').value = new Date().toISOString().substring(0, 10);
+            
             calculate();
             alert("All saved historical data has been permanently deleted. Your session is now empty.");
         }
+        // --- END SESSION MANAGEMENT LOGIC ---
 
-        // -----------------------------
-        // CSV Helper
-        // -----------------------------
-        function escapeForCSV(text) {
-            if (text === undefined || text === null) return '';
-            text = String(text);
-            // double-quote escape
-            text = text.replace(/"/g, '""');
-            // wrap if contains comma, newline, or quote
-            if (text.includes(',') || text.includes('\n') || text.includes('"')) {
-                return `"${text}"`;
-            }
-            return text;
-        }
 
+        // Utility function for downloading CSV
         function downloadCSV(csvString, filename) {
             const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
-            if (link.download !== undefined) {
+            
+            if (link.download !== undefined) { 
                 const url = URL.createObjectURL(blob);
                 link.setAttribute('href', url);
                 link.setAttribute('download', filename);
@@ -429,116 +603,144 @@
                 alert("Your browser does not support automatic downloads. Please copy the data manually.");
             }
         }
-
-        // -----------------------------
-        // EXPORT: Full flat trade history (plus visible unsaved trades)
-        // -----------------------------
-        function exportTradeLogToCSV() {
-            const sessionData = getSessionData();
-            const archived = Array.isArray(sessionData.tradeHistoryFlat) ? sessionData.tradeHistoryFlat : [];
-            const sessionDate = (document.getElementById('sessionDate') || {}).value || new Date().toISOString().substring(0,10);
-
-            // build CSV header
-            const lines = [];
-            lines.push('Date,Trade #,Actual Result ($),Screenshot Link,Notes / Rationale');
-
-            // 1) archived trades (flat)
-            archived.forEach(t => {
-                const row = [
-                    escapeForCSV(t.date || ''),
-                    escapeForCSV(t.tradeNumber || ''),
-                    escapeForCSV(t.result || ''),
-                    escapeForCSV(t.screenshot || ''),
-                    escapeForCSV(t.notes || '')
-                ];
-                lines.push(row.join(','));
-            });
-
-            // 2) include currently visible trades (they may not have been archived yet)
-            for (let i = 1; i <= NUM_TRADES; i++) {
-                const resultInput = document.getElementById(`result-${i}`);
-                if (resultInput && resultInput.value.trim() !== '') {
-                    const row = [
-                        escapeForCSV(sessionDate),
-                        escapeForCSV(i),
-                        escapeForCSV(resultInput.value),
-                        escapeForCSV((document.getElementById(`screenshot-${i}`) || {}).value || ''),
-                        escapeForCSV((document.getElementById(`notes-${i}`) || {}).value || '')
-                    ];
-                    lines.push(row.join(','));
-                }
+        
+        // Utility function to get value from input/textarea and clean it for CSV
+        function getCleanedValue(element) {
+            let text = element ? (element.value || element.innerText || '').trim() : '';
+            text = text.replace(/"/g, '""'); // Escape double quotes
+            if (text.includes(',') || text.includes('\n') || text.includes('"')) {
+                text = `"${text}"`; // Enclose if it contains delimiter, newline, or quotes
             }
-
-            if (lines.length === 1) { // only header
-                alert("No trade entries found to export.");
-                return;
-            }
-
-            const csvString = lines.join('\n');
-            const filename = `ALL_Trades_${new Date().toISOString().substring(0,10).replace(/-/g,'')}.csv`;
-            downloadCSV(csvString, filename);
-            alert(`Exported ${lines.length - 1} trade rows (archived + visible).`);
+            return text;
         }
 
-        // -----------------------------
-        // EXPORT: R.E.A.L.I.S.T. journal (saved history)
-        // -----------------------------
-        function exportJournalToCSV() {
-            const sessionData = getSessionData();
-            const realistLog = Array.isArray(sessionData.realistHistory) ? sessionData.realistHistory : [];
+        // --- EXPORT TRADE LOG FUNCTION (REVERTED TO VISIBLE, FILTERED EXPORT) ---
+        function exportTradeLogToCSV() {
+            let csv = [];
+            const sessionDate = document.getElementById('sessionDate').value || 'N/A';
 
-            if (realistLog.length === 0) {
-                alert("Saved R.E.A.L.I.S.T. journal history is empty. (Use 'Clear Log & Start New Day' to save today's journal to history).");
+            // 1. Define Header Row
+            csv.push("--- CURRENT SESSION TRADE LOG ---");
+            csv.push('Date,Trade #,Actual Result ($),Screenshot Link,Notes / Rationale');
+
+            // 2. Get Data Rows (Only those with Actual Result)
+            let tradesFound = 0;
+            for (let i = 1; i <= NUM_TRADES; i++) {
+                const resultInput = document.getElementById(`result-${i}`);
+                
+                // Check if the 'Actual Result ($)' input is filled. If not, skip the row.
+                if (resultInput && resultInput.value.trim() !== '') {
+                    tradesFound++;
+                    
+                    // Get row data
+                    const tradeNumber = i;
+                    const actualResult = resultInput.value;
+                    const screenshot = document.getElementById(`screenshot-${i}`).value;
+                    const notes = document.getElementById(`notes-${i}`).value;
+
+                    let finalRowData = [
+                        sessionDate,
+                        tradeNumber,
+                        actualResult,
+                        screenshot,
+                        notes
+                    ];
+                    
+                    csv.push(finalRowData.map(item => getCleanedValue({value: item})).join(','));
+                }
+            }
+            
+            if (tradesFound === 0) {
+                alert("No trade entries are visible in the log to export.");
                 return;
             }
 
-            const lines = [];
-            lines.push('Date,Rating,Rating Reason,Earnings Note,Alignment Note,Learning Note,Improvement Note,Sorry Note,Tomorrow Plan');
+            const csvString = csv.join('\n');
+            const filename = `Current_Trade_Log_${sessionDate.replace(/-/g, '')}.csv`;
+            
+            downloadCSV(csvString, filename);
+            alert(`Downloaded ${tradesFound} visible trade entries for ${sessionDate}.`);
+        }
 
+        // --- EXPORT REALIST JOURNAL FUNCTION (MODIFIED TO PULL ALL SAVED DATA) ---
+        function exportJournalToCSV() {
+            const sessionData = getSessionData();
+            // PULLS FROM THE HISTORICAL ARRAY
+            const realistLog = sessionData.realistHistory || []; 
+            
+            if (realistLog.length === 0) {
+                 alert("Saved R.E.A.L.I.S.T. journal history is empty. (Use 'Clear Log & Start New Day' to save today's journal to history).");
+                 return;
+            }
+
+
+            let csv = [];
+            
+            // 1. Define Header Row
+            csv.push('--- FULL SAVED REALIST JOURNAL HISTORY ---');
+            csv.push('Date,Rating,Rating Reason,Earnings Note,Alignment Note,Learning Note,Improvement Note,Sorry Note,Tomorrow Plan');
+
+
+            // 2. Get Data Rows from SAVED LOG
             realistLog.forEach(entry => {
-                const ratingDescription = (document.getElementById('ratingScore')?.querySelector(`option[value="${entry.ratingScore}"]`)?.innerText) || '';
-                const row = [
-                    escapeForCSV(entry.date || ''),
-                    escapeForCSV((entry.ratingScore || '') + (ratingDescription ? ' - ' + ratingDescription : '')),
-                    escapeForCSV(entry.ratingReason || ''),
-                    escapeForCSV(entry.earningsNote || ''),
-                    escapeForCSV(entry.alignmentNote || ''),
-                    escapeForCSV(entry.learningNote || ''),
-                    escapeForCSV(entry.improvementNote || ''),
-                    escapeForCSV(entry.sorryNote || ''),
-                    escapeForCSV(entry.tomorrowPlan || '')
+                // Get the text description for the rating score
+                const ratingDescription = document.getElementById('ratingScore').querySelector(`option[value="${entry.ratingScore}"]`)?.innerText || 'N/A';
+                
+                let rowData = [
+                    entry.date || 'N/A',
+                    entry.ratingScore + ' - ' + ratingDescription,
+                    entry.ratingReason,
+                    entry.earningsNote,
+                    entry.alignmentNote,
+                    entry.learningNote,
+                    entry.improvementNote,
+                    entry.sorryNote,
+                    entry.tomorrowPlan
                 ];
-                lines.push(row.join(','));
+                
+                csv.push(rowData.map(item => getCleanedValue({value: item})).join(','));
             });
+            
 
-            const csvString = lines.join('\n');
-            const filename = `REALIST_Journal_History_${new Date().toISOString().substring(0,10).replace(/-/g,'')}.csv`;
+            const csvString = csv.join('\n');
+            const filename = `REALIST_Journal_History_${new Date().toLocaleDateString('en-CA').replace(/-/g, '')}.csv`;
+            
             downloadCSV(csvString, filename);
             alert(`Downloaded ${realistLog.length} saved R.E.A.L.I.S.T. entries.`);
         }
+        
+        // --- CORE CALCULATION LOGIC ---
+        
+        function getFloatValue(id) {
+            return parseFloat(document.getElementById(id).value) || 0;
+        }
 
-        // -----------------------------
-        // CORE CALCULATION LOGIC (unchanged, preserved)
-        // -----------------------------
-        function getFloatValue(id) { return parseFloat(document.getElementById(id).value) || 0; }
-        function getBoolValue(id) { return document.getElementById(id).value === 'true'; }
-
+        function getBoolValue(id) {
+            return document.getElementById(id).value === 'true';
+        }
+        
         function calculateContracts() {
             const dollarRiskText = document.getElementById('nextTradeSize').textContent;
             if (dollarRiskText === "LOCKED OUT") {
                 document.getElementById('numContracts').textContent = "N/A";
                 return;
             }
+
             const dollarRisk = parseFloat(dollarRiskText) || 0;
             const tradeRange = getFloatValue('tradeRange');
-            const pointValue = 2;
+            const pointValue = 2; // Hardcoded for MNQ
+
             const riskPerContract = tradeRange * pointValue;
+            
             let numContracts = 0;
-            if (riskPerContract > 0) numContracts = Math.floor(dollarRisk / riskPerContract);
+            if (riskPerContract > 0) {
+                numContracts = Math.floor(dollarRisk / riskPerContract);
+            }
             document.getElementById('numContracts').textContent = numContracts;
         }
 
         function calculate() {
+            // Get all parameters
             const currentBalance = getFloatValue('currentBalance');
             const maxLossLimit = getFloatValue('maxLossLimit');
             const lossLockoutPercent = getFloatValue('lossLockoutPercent');
@@ -548,18 +750,17 @@
             const lockInPercent = getFloatValue('lockInPercent');
             const feePerContract = getFloatValue('feePerContract');
 
+            // Initial calculations
             const fullStack = currentBalance - maxLossLimit;
             const dailyLossLockout = fullStack * lossLockoutPercent;
-
+            
             document.getElementById('fullStack').textContent = fullStack.toFixed(2);
             document.getElementById('dailyLossLockout').textContent = `-${dailyLossLockout.toFixed(2)}`;
-
-            // Reset rows
+            
+            // BUG FIX: Reset all rows before recalculating to handle corrections
             for (let j = 1; j <= NUM_TRADES; j++) {
-                const rowEl = document.getElementById(`trade-row-${j}`);
-                const resultEl = document.getElementById(`result-${j}`);
-                if (rowEl) rowEl.classList.remove('disabled-row');
-                if (resultEl) resultEl.disabled = false;
+                document.getElementById(`trade-row-${j}`).classList.remove('disabled-row');
+                document.getElementById(`result-${j}`).disabled = false;
             }
 
             let runningPL = 0;
@@ -571,69 +772,79 @@
                 const recommendedTpslSpan = document.getElementById(`recommended-tpsl-${i}`);
                 const runningPlSpan = document.getElementById(`running-pl-${i}`);
                 const lockoutSpan = document.getElementById(`lockout-${i}`);
+
                 const prevRunningPL = (i === 1) ? 0 : parseFloat(document.getElementById(`running-pl-${i - 1}`).textContent) || 0;
 
                 let recommendedTpsl = 0;
                 if (!isLockedOut) {
                     const tradeRange = getFloatValue('tradeRange');
-                    const pointValue = 2;
+                    const pointValue = 2; // Hardcoded
                     const riskPerContract = tradeRange * pointValue;
+
                     let rawRisk = 0;
+                    
+                    // --- CORRECTED WAGERING LOGIC ---
                     if (i === 1) {
+                        // Trade #1: Always risk 50% of the daily lockout limit
                         rawRisk = dailyLossLockout * 0.5;
-                    } else if (autoLadder && prevRunningPL > 0 && prevRunningPL >= minProfitToKeep) {
+                    } 
+                    // FIX: Only apply the profit-reinvestment (Ladder) logic if we are green AND 
+                    // the profit is equal to or greater than the absolute minimum profit to keep.
+                    else if (autoLadder && prevRunningPL > 0 && prevRunningPL >= minProfitToKeep) {
                         const profitToRisk = prevRunningPL - Math.max(minProfitToKeep, prevRunningPL * lockInPercent);
                         rawRisk = profitToRisk;
-                    } else {
+                    } 
+                    else {
+                        // Default logic: 50% of the remaining buffer to hit the daily lockout limit
                         rawRisk = (dailyLossLockout + prevRunningPL) * 0.5;
                     }
+                    // ---------------------------------
+
                     let numContractsForFee = 0;
-                    if (riskPerContract > 0) numContractsForFee = Math.floor(rawRisk / riskPerContract);
-                    const totalFee = numContractsForFee * feePerContract * 2;
+                    if (riskPerContract > 0) {
+                        numContractsForFee = Math.floor(rawRisk / riskPerContract);
+                    }
+                    const totalFee = numContractsForFee * feePerContract * 2; // * 2 for entry/exit
+
                     const finalRisk = rawRisk - totalFee;
                     recommendedTpsl = Math.floor(Math.max(0, finalRisk) / roundDown) * roundDown;
                 }
-                if (recommendedTpslSpan) recommendedTpslSpan.textContent = recommendedTpsl.toFixed(2);
-
+                recommendedTpslSpan.textContent = recommendedTpsl.toFixed(2);
+                
                 if (!isLockedOut && !nextTradeSizeFound) {
-                    if (resultInput && resultInput.value.trim() === '') {
+                    if (resultInput.value.trim() === '') {
                        document.getElementById('nextTradeSize').textContent = recommendedTpsl.toFixed(2);
-                       nextTradeSizeFound = true;
+                       nextTradeSizeFound = true; 
                     }
                 }
 
-                const actualResult = resultInput ? (parseFloat(resultInput.value) || 0) : 0;
+                const actualResult = parseFloat(resultInput.value) || 0;
                 runningPL = prevRunningPL + actualResult;
 
-                if (runningPlSpan) {
-                    runningPlSpan.textContent = runningPL.toFixed(2);
-                    runningPlSpan.classList.toggle('profit-green', runningPL > 0);
-                    runningPlSpan.classList.toggle('loss-red', runningPL < 0);
-                }
+                runningPlSpan.textContent = runningPL.toFixed(2);
+                runningPlSpan.classList.toggle('profit-green', runningPL > 0);
+                runningPlSpan.classList.toggle('loss-red', runningPL < 0);
 
                 let lockoutMsg = "";
                 if (dailyLossLockout > 0 && runningPL <= -dailyLossLockout) {
                     lockoutMsg = "LOCKOUT (Daily Loss)";
                     isLockedOut = true;
                 } else if (autoLadder && prevRunningPL > 0 && actualResult < 0 && prevRunningPL >= minProfitToKeep) {
+                    // Ladder Loss Lockout only applies if we were in the aggressive profit-reinvestment mode
                     lockoutMsg = "LOCKOUT (Ladder Loss)";
                     isLockedOut = true;
                 }
-                if (lockoutSpan) {
-                    lockoutSpan.textContent = lockoutMsg;
-                    lockoutSpan.classList.add('lockout-red');
-                }
+                lockoutSpan.textContent = lockoutMsg;
+                lockoutSpan.classList.add('lockout-red');
 
                 if (isLockedOut) {
                     for (let j = i + 1; j <= NUM_TRADES; j++) {
-                        const rowEl = document.getElementById(`trade-row-${j}`);
-                        const resultEl = document.getElementById(`result-${j}`);
-                        if (rowEl) rowEl.classList.add('disabled-row');
-                        if (resultEl) resultEl.disabled = true;
+                        document.getElementById(`trade-row-${j}`).classList.add('disabled-row');
+                        document.getElementById(`result-${j}`).disabled = true;
                     }
                 }
             }
-
+            
             if (isLockedOut) {
                 document.getElementById('nextTradeSize').textContent = "LOCKED OUT";
                 document.getElementById('nextTradeSize').parentElement.classList.add('bg-red-600');
@@ -642,31 +853,36 @@
                 document.getElementById('nextTradeSize').parentElement.classList.remove('bg-red-600');
                 document.getElementById('nextTradeSize').parentElement.classList.add('bg-blue-600');
                 if (!nextTradeSizeFound) {
+                    // Logic for the next trade size if all 50 log rows are filled
                     const lastRunningPL = parseFloat(document.getElementById(`running-pl-${NUM_TRADES}`).textContent) || 0;
                     const tradeRange = getFloatValue('tradeRange');
-                    const pointValue = 2;
+                    const pointValue = 2; // Hardcoded
                     const riskPerContract = tradeRange * pointValue;
+                    
                     let rawRisk = 0;
+
                     if (autoLadder && lastRunningPL > 0 && lastRunningPL >= minProfitToKeep) {
                         const profitToRisk = lastRunningPL - Math.max(minProfitToKeep, lastRunningPL * lockInPercent);
                         rawRisk = profitToRisk;
                     } else {
                         rawRisk = (dailyLossLockout + lastRunningPL) * 0.5;
                     }
+
                     let numContractsForFee = 0;
-                    if (riskPerContract > 0) numContractsForFee = Math.floor(rawRisk / riskPerContract);
-                    const totalFee = numContractsForFee * feePerContract * 2;
+                    if (riskPerContract > 0) {
+                        numContractsForFee = Math.floor(rawRisk / riskPerContract);
+                    }
+                    const totalFee = numContractsForFee * feePerContract * 2; // * 2 for entry/exit
+
                     const finalRisk = rawRisk - totalFee;
                     const finalTradeSize = Math.floor(Math.max(0, finalRisk) / roundDown) * roundDown;
                     document.getElementById('nextTradeSize').textContent = finalTradeSize.toFixed(2);
                 }
             }
+            
             calculateContracts();
         }
 
-        // -----------------------------
-        // BUILD TRADE ROWS
-        // -----------------------------
         function createTradeRows() {
             const tbody = document.getElementById('trade-rows');
             for (let i = 1; i <= NUM_TRADES; i++) {
@@ -692,11 +908,14 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadDarkModePreference();
+            loadDarkModePreference(); // Load dark mode preference
             createTradeRows();
-            loadSession();
-            calculate();
-            // attach listeners
+            loadSession(); // Load saved session data
+            
+            // Run calculation immediately after loading default/saved settings
+            calculate(); 
+
+            // Attach listeners AFTER initial load and calculation
             const inputs = document.querySelectorAll('input, select, textarea');
             inputs.forEach(input => input.addEventListener('input', calculate));
         });
