@@ -19,7 +19,7 @@
             background-color: #f9fafb;
             font-weight: 600;
         }
-        input[type="number"], input[type="text"], input[type="date"], select, textarea {
+        input[type="number"], input[type="text"], select, textarea {
             border-radius: 0.375rem;
             border: 1px solid #d1d5db;
             padding: 0.5rem;
@@ -160,11 +160,6 @@
                     onclick="clearLogAndStartNewDay()" 
                     class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
                     ✨ Clear Log & Start New Day
-                </button>
-                 <button 
-                    onclick="clearAllSavedData()" 
-                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                    🗑️ Clear All Saved Data
                 </button>
                 <button 
                     id="downloadTradeLogButton"
@@ -682,11 +677,13 @@
                  return;
             }
 
+
             let csv = [];
             
             // 1. Define Header Row
             csv.push('--- FULL SAVED REALIST JOURNAL HISTORY ---');
             csv.push('Date,Rating,Rating Reason,Earnings Note,Alignment Note,Learning Note,Improvement Note,Sorry Note,Tomorrow Plan');
+
 
             // 2. Get Data Rows from SAVED LOG
             realistLog.forEach(entry => {
