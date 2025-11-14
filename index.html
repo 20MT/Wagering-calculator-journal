@@ -19,7 +19,7 @@
             background-color: #f9fafb;
             font-weight: 600;
         }
-        input[type="number"], input[type="text"], select, textarea {
+        input[type="number"], input[type="text"], input[type="date"], select, textarea {
             border-radius: 0.375rem;
             border: 1px solid #d1d5db;
             padding: 0.5rem;
@@ -95,7 +95,7 @@
             background-color: #374151;
             color: #f3f4f6;
         }
-        body.dark-mode input[type="number"], body.dark-mode input[type="text"], body.dark-mode select, body.dark-mode textarea {
+        body.dark-mode input[type="number"], body.dark-mode input[type="text"], body.dark-mode input[type="date"], body.dark-mode select, body.dark-mode textarea {
             background-color: #1f2937;
             color: #f3f4f6;
             border-color: #4b5563;
@@ -128,45 +128,57 @@
             </button>
         </header>
         
-        <div class="mt-2 p-3 bg-blue-100 border border-blue-200 rounded-lg text-sm text-blue-900 instruction-box">
-            <h2 class="font-semibold mb-1">How to Use This Tool:</h2>
-            <ol class="list-decimal list-inside space-y-1">
-                <li><strong>Set Up Your Day:</strong> Enter your account and trade parameters in the boxes above.</li>
-                <li><strong>Log Trades:</strong> After each trade, enter the P/L and log a <strong>Screenshot Link</strong> and <strong>Notes</strong> in the log below.</li>
-                <li><strong>Complete Journal:</strong> At the end of the session, fill out the <strong>R.E.A.L.I.S.T. Journal</strong> questions at the bottom.</li>
-                <li><strong>Save:</strong> Press <strong>Save Current Session</strong> to save your data to your browser or <strong>Clear Log & Start New Day</strong> if you are starting a new day.</li>
-                <li><strong>Export Data:</strong> Click the <strong>Download buttons</strong> to save your saved Trade Log and separate Journal entries.</li>
-            </ol>
+        <div id="instructionsBox" class="mt-2 p-3 bg-blue-100 border border-blue-200 rounded-lg text-sm text-blue-900 instruction-box">
+            <div id="instructionsHeader" class="font-semibold mb-1 cursor-pointer flex justify-between items-center" onclick="toggleInstructions()">
+                <h2>How to Use This Tool:</h2>
+                <span id="toggleArrow" class="transform transition-transform duration-300">▼</span>
+            </div>
+            <div id="instructionsContent" class="hidden pt-2 border-t border-blue-200 mt-2">
+                <ol class="list-decimal list-inside space-y-1">
+                    <li><strong>Set Up Your Day:</strong> Enter your account and trade parameters in the boxes above.</li>
+                    <li><strong>Log Trades:</strong> After each trade, enter the P/L and log a <strong>Screenshot Link</strong> and <strong>Notes</strong> in the log below.</li>
+                    <li><strong>Complete Journal:</strong> At the end of the session, fill out the <strong>R.E.A.L.I.S.T. Journal</strong> questions at the bottom.</li>
+                    <li><strong>Save:</strong> Press <strong>Save Current Session</strong> to save your data to your browser or <strong>Clear Log & Start New Day</strong> if you are starting a new day.</li>
+                    <li><strong>Export Data:</strong> Click the <strong>Download buttons</strong> to save your saved Trade Log and separate Journal entries.</li>
+                </ol>
+            </div>
         </div>
 
-        <div class="mt-6 p-4 bg-gray-100 rounded-lg border border-gray-200 flex justify-start items-center flex-wrap gap-3">
-             <button 
-                onclick="saveSession()" 
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                💾 Save Current Session
-            </button>
-             <button 
-                onclick="clearLogAndStartNewDay()" 
-                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                ✨ Clear Log & Start New Day
-            </button>
-            <button 
-                onclick="clearAllSavedData()" 
-                class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                🗑️ Clear All Saved Data
-            </button>
-            <button 
-                id="downloadTradeLogButton"
-                onclick="exportTradeLogToCSV()" 
-                class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                Download Trade Log (CSV)
-            </button>
-            <button 
-                id="downloadJournalButton"
-                onclick="exportJournalToCSV()" 
-                class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                Download R.E.A.L.I.S.T. Journal (CSV)
-            </button>
+        <div class="mt-6 p-4 bg-gray-100 rounded-lg border border-gray-200">
+            <div class="mb-4">
+                <label for="sessionDate" class="block text-sm font-semibold text-gray-700 mb-1">Today's Session Date:</label>
+                <input type="date" id="sessionDate" class="w-full sm:w-1/3 mt-1" value="">
+            </div>
+
+            <div class="flex justify-start items-center flex-wrap gap-3 pt-2 border-t border-gray-300">
+                 <button 
+                    onclick="saveSession()" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                    💾 Save Current Session
+                </button>
+                 <button 
+                    onclick="clearLogAndStartNewDay()" 
+                    class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                    ✨ Clear Log & Start New Day
+                </button>
+                 <button 
+                    onclick="clearAllSavedData()" 
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                    🗑️ Clear All Saved Data
+                </button>
+                <button 
+                    id="downloadTradeLogButton"
+                    onclick="exportTradeLogToCSV()" 
+                    class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                    Download Trade Log (CSV)
+                </button>
+                <button 
+                    id="downloadJournalButton"
+                    onclick="exportJournalToCSV()" 
+                    class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                    Download R.E.A.L.I.S.T. Journal (CSV)
+                </button>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6">
@@ -376,8 +388,23 @@
             'minProfitToKeep', 'lockInPercent', 'roundDown', 'feePerContract',
             // R.E.A.L.I.S.T. Journal
             'ratingScore', 'ratingReason', 'earningsNote', 'alignmentNote', 'learningNote', 
-            'improvementNote', 'sorryNote', 'tomorrowPlan'
+            'improvementNote', 'sorryNote', 'tomorrowPlan',
+            // Date
+            'sessionDate'
         ];
+
+        // --- ACCORDION LOGIC ---
+        function toggleInstructions() {
+            const content = document.getElementById('instructionsContent');
+            const arrow = document.getElementById('toggleArrow');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                arrow.classList.add('rotate-180'); // Rotate arrow up
+            } else {
+                content.classList.add('hidden');
+                arrow.classList.remove('rotate-180'); // Rotate arrow down
+            }
+        }
 
         // --- SESSION MANAGEMENT LOGIC ---
         function saveSession() {
@@ -404,6 +431,15 @@
                     });
                 }
             }
+            // Combine with any previously saved trade log data before overwriting
+            const existingSavedData = localStorage.getItem('tradingSessionData');
+            if (existingSavedData) {
+                const existingSession = JSON.parse(existingSavedData);
+                // We assume 'tradeLog' in the sessionData passed to storage is the currently accumulated list
+                // To keep it simple and avoid complex merging, we save the currently visible log.
+                // The history accumulation happens outside of this direct save, during the clearLog call.
+            }
+
             sessionData['tradeLog'] = tradeLogData;
             
             localStorage.setItem('tradingSessionData', JSON.stringify(sessionData));
@@ -412,7 +448,11 @@
 
         function loadSession() {
             const savedData = localStorage.getItem('tradingSessionData');
-            if (!savedData) return;
+            if (!savedData) {
+                // Set today's date if no session is loaded
+                document.getElementById('sessionDate').value = new Date().toISOString().substring(0, 10);
+                return;
+            }
 
             const sessionData = JSON.parse(savedData);
 
@@ -423,10 +463,14 @@
                     element.value = sessionData[id];
                 }
             });
+            // If sessionDate isn't in saved data or is blank, set today's date
+            if (!sessionData['sessionDate'] || sessionData['sessionDate'] === '') {
+                 document.getElementById('sessionDate').value = new Date().toISOString().substring(0, 10);
+            }
+
 
             // 2. Load Trade Log Data
             if (sessionData.tradeLog) {
-                // When loading, only load the data back into the first trades. 
                 sessionData.tradeLog.forEach((trade, index) => {
                     const i = index + 1;
                     if (document.getElementById(`result-${i}`)) {
@@ -444,8 +488,48 @@
             
             if (!confirmClear) return;
 
-            // 2. SAVE the current data first
-            saveSession();
+            // 2. SAVE the current data first (this ensures the current day's log is captured)
+            // Get the current on-screen session data to append to history
+            const currentSessionData = {};
+            INPUT_ELEMENT_IDS.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) { currentSessionData[id] = element.value; }
+            });
+            
+            const currentTradeLog = [];
+            for (let i = 1; i <= NUM_TRADES; i++) {
+                const resultInput = document.getElementById(`result-${i}`);
+                if (resultInput && resultInput.value.trim() !== '') {
+                    currentTradeLog.push({
+                        date: currentSessionData['sessionDate'] || new Date().toISOString().substring(0, 10),
+                        result: resultInput.value,
+                        screenshot: document.getElementById(`screenshot-${i}`).value,
+                        notes: document.getElementById(`notes-${i}`).value,
+                    });
+                }
+            }
+
+            // Load existing history and append the current day's log
+            const existingSavedData = localStorage.getItem('tradingSessionData');
+            let historicalTradeLog = [];
+            let updatedSessionData = currentSessionData;
+
+            if (existingSavedData) {
+                const existingSession = JSON.parse(existingSavedData);
+                // Use the existing historical trade log if it exists
+                historicalTradeLog = existingSession['tradeLog'] || [];
+            }
+            
+            // Only append the current day's trades if there were any
+            if (currentTradeLog.length > 0) {
+                 // Append the current day's log to the history
+                historicalTradeLog = historicalTradeLog.concat(currentTradeLog);
+            }
+            
+            // Save the ENTIRE accumulated history back to storage
+            updatedSessionData['tradeLog'] = historicalTradeLog;
+            localStorage.setItem('tradingSessionData', JSON.stringify(updatedSessionData));
+
 
             // 3. Clear all Trade Log inputs and Journal inputs on screen
             for (let i = 1; i <= NUM_TRADES; i++) {
@@ -465,11 +549,15 @@
             document.getElementById('improvementNote').value = '';
             document.getElementById('sorryNote').value = '';
             document.getElementById('tomorrowPlan').value = '';
+            
+            // Set session date to today for the new day
+            document.getElementById('sessionDate').value = new Date().toISOString().substring(0, 10);
+
 
             // 4. Re-calculate to show the clean log and reset Trade #1's recommended size
             calculate();
 
-            alert("New Trading Day Started. The previous session's data is saved and ready for export!");
+            alert("New Trading Day Started. The accumulated session history is saved and ready for export!");
         }
 
         function clearAllSavedData() {
@@ -487,6 +575,10 @@
                     document.getElementById(`notes-${i}`).value = '';
                 }
             }
+            
+            // Reset Date to Today
+            document.getElementById('sessionDate').value = new Date().toISOString().substring(0, 10);
+            
             calculate();
             alert("All saved historical data has been permanently deleted. Your session is now empty.");
         }
@@ -522,8 +614,9 @@
             return text;
         }
 
-        // --- EXPORT TRADE LOG FUNCTION (MODIFIED TO PULL ALL SAVED DATA) ---
+        // --- EXPORT TRADE LOG FUNCTION (PULLS ALL SAVED DATA) ---
         function exportTradeLogToCSV() {
+            // NOTE: We rely on clearLogAndStartNewDay having combined the data into the 'tradeLog' array
             const savedData = localStorage.getItem('tradingSessionData');
             if (!savedData) {
                 alert("No saved session data found to export.");
@@ -531,7 +624,8 @@
             }
             
             const sessionData = JSON.parse(savedData);
-            const tradeLog = sessionData.tradeLog || [];
+            // This 'tradeLog' now contains all historical entries across multiple days/sessions
+            const tradeLog = sessionData.tradeLog || []; 
             
             if (tradeLog.length === 0) {
                  alert("Saved trade log is empty.");
@@ -540,32 +634,22 @@
 
             let csv = [];
             
-            // 1. Get Header Row (using the on-screen table header for labels)
-            const table = document.getElementById('tradeLogTable');
-            const headerRow = table.querySelector('tr');
-            const headerCols = headerRow.querySelectorAll('th');
-            let headerData = [];
-            for (let i = 0; i < headerCols.length; i++) {
-                // We only export the raw input data (Trade #, Actual Result, Screenshot Link, Notes)
-                // Discarding Recommended TP/SL, Realized P&L, and Lockout for a clean raw export.
-                if (i !== 1 && i !== 3 && i !== 4) {
-                    headerData.push(getCleanedValue(headerCols[i]));
-                }
-            }
+            // 1. Define Header Row (using the on-screen table header for labels + DATE)
             csv.push("--- FULL SAVED TRADE HISTORY ---");
-            csv.push(headerData.join(','));
+            csv.push('Date,Trade #,Actual Result ($),Screenshot Link,Notes / Rationale');
 
 
             // 2. Get Data Rows from SAVED LOG
-            tradeLog.forEach((trade, index) => {
-                const i = index + 1; // Trade #
+            let tradeNumber = 1;
+            tradeLog.forEach((trade) => {
                 
-                // Manually map to the simplified header order: Trade #, Actual Result, Screenshot Link, Notes
+                // Manually map to the simplified header order: Date, Trade #, Actual Result, Screenshot Link, Notes
                 let finalRowData = [
-                    i, 
-                    trade.result,
-                    trade.screenshot,
-                    trade.notes
+                    trade.date || 'N/A', // DATE
+                    tradeNumber++,       // Trade # (continuous counting)
+                    trade.result,        // Actual Result
+                    trade.screenshot,    // Screenshot Link
+                    trade.notes          // Notes
                 ];
                 
                 csv.push(finalRowData.map(item => getCleanedValue({value: item})).join(','));
@@ -584,6 +668,7 @@
             csv.push('Journal Field,Value');
             
             const realistData = [
+                { label: 'Session Date', elementId: 'sessionDate' },
                 { label: 'R - Rating', elementId: 'ratingScore' },
                 { label: 'R - Rating Reason', elementId: 'ratingReason' },
                 { label: 'E - Earnings Note', elementId: 'earningsNote' },
