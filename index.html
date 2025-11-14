@@ -418,7 +418,7 @@
                 }
             });
 
-            // 2. Save Trade Log Data (only visible data)
+            // 2. Save Trade Log Data (only visible data for CURRENT SESSION RELOAD)
             const tradeLogData = [];
             for (let i = 1; i <= NUM_TRADES; i++) {
                 const resultInput = document.getElementById(`result-${i}`);
@@ -430,11 +430,18 @@
                     });
                 }
             }
-            // CRITICAL: We save the *current* visible log entries for page reload purposes under this key
-            sessionData['tradeLog'] = tradeLogData; 
+            sessionData['tradeLog'] = tradeLogData;
+            
+            // 3. Preserve historical arrays if they exist
+            const existingSavedData = localStorage.getItem('tradingSessionData');
+            if (existingSavedData) {
+                const existingSession = JSON.parse(existingSavedData);
+                // Preserve history keys here
+                sessionData['realistHistory'] = existingSession['realistHistory'] || [];
+            }
             
             localStorage.setItem('tradingSessionData', JSON.stringify(sessionData));
-            alert("Session Saved! You can close and reopen your browser.");
+            alert("Session Saved! Your visible data and historical history are preserved.");
         }
 
         function loadSession() {
@@ -488,21 +495,6 @@
                 if (element) { currentSessionData[id] = element.value; }
             });
             
-            // Get current trade log entries (for *re-saving* visible trades to history)
-            const currentTradeLog = [];
-            for (let i = 1; i <= NUM_TRADES; i++) {
-                const resultInput = document.getElementById(`result-${i}`);
-                if (resultInput && resultInput.value.trim() !== '') {
-                    currentTradeLog.push({
-                        date: currentSessionData['sessionDate'] || new Date().toISOString().substring(0, 10),
-                        result: resultInput.value,
-                        screenshot: document.getElementById(`screenshot-${i}`).value,
-                        notes: document.getElementById(`notes-${i}`).value,
-                    });
-                }
-            }
-
-
             // B. Load existing history
             const existingSavedData = localStorage.getItem('tradingSessionData');
             let historicalRealistLog = [];
@@ -532,7 +524,7 @@
             // D. Save the ENTIRE accumulated history and reset the current log state
             let updatedSessionData = currentSessionData;
             updatedSessionData['realistHistory'] = historicalRealistLog;
-            // TradeLog is NOT accumulated—it's only cleared on screen. The Download Trade Log button will now only export the VISIBLE log.
+            // Clear the trade log so the screen is empty on reload/recalculation
             updatedSessionData['tradeLog'] = []; 
             
             localStorage.setItem('tradingSessionData', JSON.stringify(updatedSessionData));
