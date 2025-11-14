@@ -420,6 +420,7 @@
 
             // 2. Save Trade Log Data (only visible data, as history is accumulated via clearLogAndStartNewDay)
             const tradeLogData = [];
+            // Iterate through all 50 possible rows to find existing data, even if cleared on screen
             for (let i = 1; i <= NUM_TRADES; i++) {
                 const resultInput = document.getElementById(`result-${i}`);
                 if (resultInput && resultInput.value.trim() !== '') {
@@ -510,7 +511,8 @@
 
             if (existingSavedData) {
                 const existingSession = JSON.parse(existingSavedData);
-                historicalTradeLog = existingSession['tradeLogHistory'] || existingSession['tradeLog'] || []; // Backwards compatibility for old tradeLog key
+                // Backwards compatibility for old key 'tradeLog' if it exists
+                historicalTradeLog = existingSession['tradeLogHistory'] || existingSession['tradeLog'] || []; 
                 historicalRealistLog = existingSession['realistHistory'] || [];
             }
             
@@ -531,8 +533,8 @@
                 sorryNote: currentSessionData['sorryNote'],
                 tomorrowPlan: currentSessionData['tomorrowPlan']
             };
-            // Only save if the journal isn't completely empty (i.e., rating score was set)
-            if (currentRealistEntry.ratingScore !== '3' || currentRealistEntry.ratingReason !== '') {
+            // Only save if the journal isn't completely empty (i.e., rating score was set or any text written)
+            if (currentRealistEntry.ratingScore !== '3' || currentRealistEntry.ratingReason !== '' || currentRealistEntry.earningsNote !== '') {
                  historicalRealistLog.push(currentRealistEntry);
             }
             
@@ -540,6 +542,9 @@
             let updatedSessionData = currentSessionData;
             updatedSessionData['tradeLogHistory'] = historicalTradeLog;
             updatedSessionData['realistHistory'] = historicalRealistLog;
+            // Also save the *current* visible log state for continuity when reloading the page.
+            updatedSessionData['tradeLog'] = []; 
+            
             localStorage.setItem('tradingSessionData', JSON.stringify(updatedSessionData));
 
 
@@ -635,7 +640,7 @@
             }
             
             const sessionData = JSON.parse(savedData);
-            // Now pull from the dedicated history key
+            // PULLS FROM THE HISTORICAL ARRAY
             const tradeLog = sessionData.tradeLogHistory || []; 
             
             if (tradeLog.length === 0) {
@@ -647,12 +652,10 @@
             
             // 1. Define Header Row
             csv.push("--- FULL SAVED TRADE HISTORY ---");
-            // Simplified header for the raw data we saved
             csv.push('Date,Trade #,Actual Result ($),Screenshot Link,Notes / Rationale');
 
 
             // 2. Get Data Rows from SAVED LOG
-            // We use a continuous trade number here (starts at 1)
             let tradeNumber = 1; 
             tradeLog.forEach((trade) => {
                 
@@ -684,7 +687,7 @@
             }
             
             const sessionData = JSON.parse(savedData);
-            // Pull from the dedicated R.E.A.L.I.S.T. history key
+            // PULLS FROM THE HISTORICAL ARRAY
             const realistLog = sessionData.realistHistory || []; 
             
             if (realistLog.length === 0) {
@@ -702,9 +705,12 @@
 
             // 2. Get Data Rows from SAVED LOG
             realistLog.forEach(entry => {
+                // Get the text description for the rating score
+                const ratingDescription = document.getElementById('ratingScore').querySelector(`option[value="${entry.ratingScore}"]`)?.innerText || 'N/A';
+                
                 let rowData = [
                     entry.date || 'N/A',
-                    entry.ratingScore + ' - ' + (document.getElementById('ratingScore').querySelector(`option[value="${entry.ratingScore}"]`)?.innerText || 'N/A'),
+                    entry.ratingScore + ' - ' + ratingDescription,
                     entry.ratingReason,
                     entry.earningsNote,
                     entry.alignmentNote,
