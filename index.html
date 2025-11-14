@@ -418,9 +418,8 @@
                 }
             });
 
-            // 2. Save Trade Log Data (only visible data, as history is accumulated via clearLogAndStartNewDay)
+            // 2. Save Trade Log Data (only visible data)
             const tradeLogData = [];
-            // Iterate through all 50 possible rows to find existing data, even if cleared on screen
             for (let i = 1; i <= NUM_TRADES; i++) {
                 const resultInput = document.getElementById(`result-${i}`);
                 if (resultInput && resultInput.value.trim() !== '') {
@@ -433,8 +432,7 @@
             }
             sessionData['tradeLog'] = tradeLogData;
             
-            // NOTE: We rely on clearLogAndStartNewDay to append to historicalTradeLog, 
-            // so we don't need a separate history key for the R.E.A.L.I.S.T. data in this simple save.
+            // Note: This button only saves the visible state, not history accumulation.
             
             localStorage.setItem('tradingSessionData', JSON.stringify(sessionData));
             alert("Session Saved! You can close and reopen your browser.");
@@ -542,7 +540,7 @@
             let updatedSessionData = currentSessionData;
             updatedSessionData['tradeLogHistory'] = historicalTradeLog;
             updatedSessionData['realistHistory'] = historicalRealistLog;
-            // Also save the *current* visible log state for continuity when reloading the page.
+            // Also clear the *current* visible log state for continuity when reloading the page.
             updatedSessionData['tradeLog'] = []; 
             
             localStorage.setItem('tradingSessionData', JSON.stringify(updatedSessionData));
@@ -640,8 +638,8 @@
             }
             
             const sessionData = JSON.parse(savedData);
-            // PULLS FROM THE HISTORICAL ARRAY
-            const tradeLog = sessionData.tradeLogHistory || []; 
+            // PULLS FROM THE HISTORICAL ARRAY, CHECKING OLD KEY FOR ROBUSTNESS
+            const tradeLog = sessionData.tradeLogHistory || sessionData.tradeLog || []; 
             
             if (tradeLog.length === 0) {
                  alert("Saved trade log is empty.");
