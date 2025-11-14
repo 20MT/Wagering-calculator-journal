@@ -139,20 +139,29 @@
             </ol>
         </div>
 
-        <div class="mt-6 p-4 bg-gray-100 rounded-lg border border-gray-200 flex justify-between items-center flex-wrap gap-3">
-             <span class="font-semibold text-gray-700">Session Controls:</span>
-             <div class="space-x-3 flex flex-wrap gap-2">
-                 <button 
-                    onclick="saveSession()" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                    💾 Save Current Session
-                </button>
-                 <button 
-                    onclick="clearLogAndStartNewDay()" 
-                    class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                    ✨ Clear Log & Start New Day
-                </button>
-             </div>
+        <div class="mt-6 p-4 bg-gray-100 rounded-lg border border-gray-200 flex justify-start items-center flex-wrap gap-3">
+             <button 
+                onclick="saveSession()" 
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                💾 Save Current Session
+            </button>
+             <button 
+                onclick="clearLogAndStartNewDay()" 
+                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                ✨ Clear Log & Start New Day
+            </button>
+            <button 
+                id="downloadTradeLogButton"
+                onclick="exportTradeLogToCSV()" 
+                class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                Download Trade Log (CSV)
+            </button>
+            <button 
+                id="downloadJournalButton"
+                onclick="exportJournalToCSV()" 
+                class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                Download R.E.A.L.I.S.T. Journal (CSV)
+            </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6">
@@ -240,23 +249,7 @@
         </div>
         
         <div class="mt-8 pt-6 border-t">
-             <div class="flex justify-between items-center mb-4">
-                 <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Trade Log</h2>
-                 <div class="space-x-2">
-                    <button 
-                        id="downloadTradeLogButton"
-                        onclick="exportTradeLogToCSV()" 
-                        class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                        Download Trade Log (CSV)
-                    </button>
-                    <button 
-                        id="downloadJournalButton"
-                        onclick="exportJournalToCSV()" 
-                        class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                        Download R.E.A.L.I.S.T. Journal (CSV)
-                    </button>
-                 </div>
-             </div>
+             <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Trade Log</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 border" id="tradeLogTable">
                     <thead class="bg-gray-50">
@@ -436,9 +429,6 @@
                     }
                 });
             }
-            
-            // Re-calculate based on loaded data
-            calculate();
         }
         
         function clearLogAndStartNewDay() {
@@ -794,7 +784,10 @@
             createTradeRows();
             loadSession(); // Load saved session data
             
-            // Recalculate will be called by loadSession, but ensure listeners are attached
+            // Run calculation immediately after loading default/saved settings
+            calculate(); 
+
+            // Attach listeners AFTER initial load and calculation
             const inputs = document.querySelectorAll('input, select, textarea');
             inputs.forEach(input => input.addEventListener('input', calculate));
         });
