@@ -424,9 +424,10 @@
 
         // (FIXED) This button saves the VISIBLE state AND preserves history
         function saveSession() {
-            const sessionData = getSessionData(); // Load existing history
+            // 1. Load existing data, including history keys
+            const sessionData = getSessionData();
 
-            // 1. Save Settings and Journal
+            // 2. Update all settings and journal fields
             INPUT_ELEMENT_IDS.forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
@@ -434,7 +435,7 @@
                 }
             });
 
-            // 2. Save Trade Log Data (only visible data for CURRENT SESSION RELOAD)
+            // 3. Save only the *visible* Trade Log data
             const tradeLogData = [];
             for (let i = 1; i <= NUM_TRADES; i++) {
                 const resultInput = document.getElementById(`result-${i}`);
@@ -448,7 +449,7 @@
             }
             sessionData['tradeLog'] = tradeLogData; // This is the VISIBLE log
             
-            // 3. We DON'T touch 'tradeLogHistory' or 'realistHistory'. They are preserved.
+            // 4. The 'realistHistory' and 'tradeLogHistory' keys are already on sessionData (from step 1) and are NOT touched.
             
             localStorage.setItem('tradingSessionData', JSON.stringify(sessionData));
             alert("Session Saved! Your visible data and historical history are preserved.");
@@ -485,7 +486,7 @@
         
         function clearLogAndStartNewDay() {
             // 1. Check if the user wants to keep the data
-            const confirmClear = confirm("Are you sure you want to clear the on-screen Trade Log and R.E.A.L.I.S.T. Journal for a new day?\n\nNOTE: The current day's data will be saved to the historical log first, but the screen will be wiped.");
+            const confirmClear = confirm("Are you sure you want to clear the on-screen Trade Log and R.E.A.L.I.S.T. Journal for a new day?\n\nNOTE: The current data will be saved to your browser session first, but the screen will be wiped.");
             
             if (!confirmClear) return;
 
@@ -498,30 +499,11 @@
                 if (element) { currentSessionData[id] = element.value; }
             });
             
-            const currentTradeLogEntries = [];
-            for (let i = 1; i <= NUM_TRADES; i++) {
-                const resultInput = document.getElementById(`result-${i}`);
-                if (resultInput && resultInput.value.trim() !== '') {
-                    currentTradeLogEntries.push({
-                        date: currentSessionData['sessionDate'] || new Date().toISOString().substring(0, 10),
-                        result: resultInput.value,
-                        screenshot: document.getElementById(`screenshot-${i}`).value,
-                        notes: document.getElementById(`notes-${i}`).value,
-                    });
-                }
-            }
-
             // B. Load existing history
             const existingSession = getSessionData();
-            let historicalTradeLog = existingSession['tradeLogHistory'] || []; 
             let historicalRealistLog = existingSession['realistHistory'] || [];
             
-            // C. Append current day's trades to the trade history
-            if (currentTradeLogEntries.length > 0) {
-                historicalTradeLog = historicalTradeLog.concat(currentTradeLogEntries);
-            }
-            
-            // D. Append the current R.E.A.L.I.S.T. journal entry to the realist history
+            // C. Append the current R.E.A.L.I.S.T. journal entry to the realist history
             const currentRealistEntry = {
                 date: currentSessionData['sessionDate'] || new Date().toISOString().substring(0, 10),
                 ratingScore: currentSessionData['ratingScore'],
@@ -538,12 +520,13 @@
                  historicalRealistLog.push(currentRealistEntry);
             }
             
-            // E. Save the ENTIRE accumulated history and reset the current log state
+            // D. Save the ENTIRE accumulated history and reset the current log state
             let updatedSessionData = currentSessionData;
             updatedSessionData['realistHistory'] = historicalRealistLog;
-            updatedSessionData['tradeLogHistory'] = historicalTradeLog; 
-            // Clear the visible trade log key
+            // Clear the tradeLog key so the screen is empty on reload/recalculation
             updatedSessionData['tradeLog'] = []; 
+            // We NO LONGER save tradeLogHistory, to avoid conflicts.
+            delete updatedSessionData['tradeLogHistory']; 
             
             localStorage.setItem('tradingSessionData', JSON.stringify(updatedSessionData));
 
@@ -574,7 +557,7 @@
             // 4. Re-calculate to show the clean log and reset Trade #1's recommended size
             calculate();
 
-            alert("New Trading Day Started. The accumulated session history is saved and ready for export!");
+            alert("New Trading Day Started. The R.E.A.L.I.S.T. history is saved and ready for export!");
         }
 
         function clearAllSavedData() {
@@ -631,46 +614,52 @@
             return text;
         }
 
-        // --- EXPORT TRADE LOG FUNCTION (FIXED: Pulls from dedicated history key) ---
+        // --- EXPORT TRADE LOG FUNCTION (REVERTED TO VISIBLE, FILTERED EXPORT) ---
         function exportTradeLogToCSV() {
-            const sessionData = getSessionData();
-            
-            // PULLS FROM THE HISTORICAL ARRAY
-            const tradeLog = sessionData.tradeLogHistory || []; 
-            
-            if (tradeLog.length === 0) {
-                 alert("Saved trade log history is empty. (Use 'Clear Log & Start New Day' to save today's trades to history).");
-                 return;
-            }
-
             let csv = [];
-            
+            const sessionDate = document.getElementById('sessionDate').value || 'N/A';
+
             // 1. Define Header Row
-            csv.push("--- FULL SAVED TRADE HISTORY ---");
+            csv.push("--- CURRENT SESSION TRADE LOG ---");
             csv.push('Date,Trade #,Actual Result ($),Screenshot Link,Notes / Rationale');
 
+            // 2. Get Data Rows (Only those with Actual Result)
+            let tradesFound = 0;
+            for (let i = 1; i <= NUM_TRADES; i++) {
+                const resultInput = document.getElementById(`result-${i}`);
+                
+                // Check if the 'Actual Result ($)' input is filled. If not, skip the row.
+                if (resultInput && resultInput.value.trim() !== '') {
+                    tradesFound++;
+                    
+                    // Get row data
+                    const tradeNumber = i;
+                    const actualResult = resultInput.value;
+                    const screenshot = document.getElementById(`screenshot-${i}`).value;
+                    const notes = document.getElementById(`notes-${i}`).value;
 
-            // 2. Get Data Rows from SAVED LOG
-            let tradeNumber = 1; 
-            tradeLog.forEach((trade) => {
-                
-                // Manually map to the simplified header order: Date, Trade #, Actual Result, Screenshot Link, Notes
-                let finalRowData = [
-                    trade.date || 'N/A', // DATE
-                    tradeNumber++,       // Trade # (continuous counting)
-                    trade.result || '',  // Actual Result
-                    trade.screenshot || '',    // Screenshot Link
-                    trade.notes || ''         // Notes
-                ];
-                
-                csv.push(finalRowData.map(item => getCleanedValue({value: item})).join(','));
-            });
+                    let finalRowData = [
+                        sessionDate,
+                        tradeNumber,
+                        actualResult,
+                        screenshot,
+                        notes
+                    ];
+                    
+                    csv.push(finalRowData.map(item => getCleanedValue({value: item})).join(','));
+                }
+            }
+            
+            if (tradesFound === 0) {
+                alert("No trade entries are visible in the log to export.");
+                return;
+            }
 
             const csvString = csv.join('\n');
-            const filename = `FULL_TRADE_HISTORY_${new Date().toLocaleDateString('en-CA').replace(/-/g, '')}.csv`;
+            const filename = `Current_Trade_Log_${sessionDate.replace(/-/g, '')}.csv`;
             
             downloadCSV(csvString, filename);
-            alert(`Downloaded ${tradeLog.length} saved trade entries.`);
+            alert(`Downloaded ${tradesFound} visible trade entries for ${sessionDate}.`);
         }
 
         // --- EXPORT REALIST JOURNAL FUNCTION (MODIFIED TO PULL ALL SAVED DATA) ---
