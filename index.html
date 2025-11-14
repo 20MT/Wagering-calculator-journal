@@ -111,7 +111,7 @@
             opacity: 0.5;
         }
         body.dark-mode #ratingScore {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23f3f4f6' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%img/svg%3e"); /* Lighten dropdown arrow */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23f3f4f6' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e"); /* Lighten dropdown arrow */
         }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -161,22 +161,17 @@
                     class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
                     ✨ Clear Log & Start New Day
                 </button>
-                 <button 
-                    onclick="clearAllSavedData()" 
-                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                    🗑️ Clear All Saved Data
-                </button>
                 <button 
                     id="downloadTradeLogButton"
                     onclick="exportTradeLogToCSV()" 
                     class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                    Download Trade Log (CSV)
+                    📊 Download Trade Log (CSV)
                 </button>
                 <button 
                     id="downloadJournalButton"
                     onclick="exportJournalToCSV()" 
                     class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                    Download R.E.A.L.I.S.T. Journal (CSV)
+                    📝 Download R.E.A.L.I.S.T. Journal (CSV)
                 </button>
             </div>
         </div>
