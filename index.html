@@ -492,7 +492,7 @@
 
             // --- DATA ACCUMULATION FOR HISTORY (ONLY FOR REALIST) ---
 
-            // A. Get current day's data (trades + R.E.A.L.I.S.T. + Date)
+            // A. Get current day's data
             const currentSessionData = {};
             INPUT_ELEMENT_IDS.forEach(id => {
                 const element = document.getElementById(id);
@@ -525,7 +525,7 @@
             updatedSessionData['realistHistory'] = historicalRealistLog;
             // Clear the visible tradeLog key
             updatedSessionData['tradeLog'] = []; 
-            // We NO LONGER save tradeLogHistory, to avoid conflicts.
+            // Ensure no old trade log history is kept
             delete updatedSessionData['tradeLogHistory']; 
             
             localStorage.setItem('tradingSessionData', JSON.stringify(updatedSessionData));
@@ -614,7 +614,7 @@
             return text;
         }
 
-        // --- EXPORT TRADE LOG FUNCTION (REVERTED TO VISIBLE, FILTERED EXPORT) ---
+        // --- (FIXED) EXPORT TRADE LOG FUNCTION (Reverted to VISIBLE, FILTERED EXPORT) ---
         function exportTradeLogToCSV() {
             let csv = [];
             const sessionDate = document.getElementById('sessionDate').value || 'N/A';
@@ -670,7 +670,7 @@
             alert(`Downloaded ${tradesFound} visible trade entries for ${sessionDate}.`);
         }
 
-        // --- EXPORT REALIST JOURNAL FUNCTION (MODIFIED TO PULL ALL SAVED DATA) ---
+        // --- EXPORT REALIST JOURNAL FUNCTION (PULLS ALL SAVED DATA) ---
         function exportJournalToCSV() {
             const sessionData = getSessionData();
             // PULLS FROM THE HISTORICAL ARRAY
