@@ -19,7 +19,7 @@
             background-color: #f9fafb;
             font-weight: 600;
         }
-        input[type="number"], input[type="text"], select, textarea {
+        input[type="number"], input[type="text"], input[type="date"], select, textarea {
             border-radius: 0.375rem;
             border: 1px solid #d1d5db;
             padding: 0.5rem;
@@ -525,7 +525,7 @@
             updatedSessionData['realistHistory'] = historicalRealistLog;
             // Clear the visible tradeLog key
             updatedSessionData['tradeLog'] = []; 
-            // Ensure no old trade log history is kept
+            // We NO LONGER save tradeLogHistory, to avoid conflicts.
             delete updatedSessionData['tradeLogHistory']; 
             
             localStorage.setItem('tradingSessionData', JSON.stringify(updatedSessionData));
@@ -604,9 +604,10 @@
             }
         }
         
-        // Utility function to get value from input/textarea and clean it for CSV
-        function getCleanedValue(element) {
-            let text = element ? (element.value || element.innerText || '').trim() : '';
+        // --- (FIXED) HELPER FUNCTION: Now accepts raw strings/numbers ---
+        function getCleanedValue(value) {
+            // Convert value to string in case it's a number or null/undefined
+            let text = String(value || '').trim();
             text = text.replace(/"/g, '""'); // Escape double quotes
             if (text.includes(',') || text.includes('\n') || text.includes('"')) {
                 text = `"${text}"`; // Enclose if it contains delimiter, newline, or quotes
@@ -631,7 +632,7 @@
                 'Notes / Rationale'
             ];
             csv.push("--- CURRENT SESSION TRADE LOG ---");
-            csv.push(headerData.map(item => getCleanedValue({value: item})).join(','));
+            csv.push(headerData.map(getCleanedValue).join(',')); // Use helper for header
 
             // 2. Get Data Rows (Only those with Actual Result)
             let tradesFound = 0;
@@ -654,7 +655,7 @@
                         document.getElementById(`notes-${i}`).value
                     ];
                     
-                    csv.push(rowData.map(item => getCleanedValue({value: item})).join(','));
+                    csv.push(rowData.map(getCleanedValue).join(',')); // Use helper for data
                 }
             }
             
@@ -670,7 +671,7 @@
             alert(`Downloaded ${tradesFound} visible trade entries for ${sessionDate}.`);
         }
 
-        // --- EXPORT REALIST JOURNAL FUNCTION (PULLS ALL SAVED DATA) ---
+        // --- (FIXED) EXPORT REALIST JOURNAL FUNCTION (PULLS ALL SAVED DATA) ---
         function exportJournalToCSV() {
             const sessionData = getSessionData();
             // PULLS FROM THE HISTORICAL ARRAY
@@ -681,13 +682,11 @@
                  return;
             }
 
-
             let csv = [];
             
             // 1. Define Header Row
             csv.push('--- FULL SAVED REALIST JOURNAL HISTORY ---');
             csv.push('Date,Rating,Rating Reason,Earnings Note,Alignment Note,Learning Note,Improvement Note,Sorry Note,Tomorrow Plan');
-
 
             // 2. Get Data Rows from SAVED LOG
             realistLog.forEach(entry => {
@@ -708,10 +707,9 @@
                     entry.tomorrowPlan
                 ];
                 
-                csv.push(rowData.map(item => getCleanedValue({value: item})).join(','));
+                csv.push(rowData.map(item => getCleanedValue(item)).join(',')); // Use helper for data
             });
             
-
             const csvString = csv.join('\n');
             const filename = `REALIST_Journal_History_${new Date().toLocaleDateString('en-CA').replace(/-/g, '')}.csv`;
             
