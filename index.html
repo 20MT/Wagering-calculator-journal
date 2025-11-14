@@ -151,6 +151,11 @@
                 ✨ Clear Log & Start New Day
             </button>
             <button 
+                onclick="clearAllSavedData()" 
+                class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                🗑️ Clear All Saved Data
+            </button>
+            <button 
                 id="downloadTradeLogButton"
                 onclick="exportTradeLogToCSV()" 
                 class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
@@ -206,7 +211,7 @@
                     </div>
                     <div>
                         <label for="minProfitToKeep" class="block text-sm font-medium text-gray-700">Absolute minimum profit ($)</label>
-                        <input type="number" id="minProfitToKeep" value="0" class="mt-1"> 
+                        <input type="number" id="minProfitToKeep" value="30" class="mt-1"> 
                     </div>
                     <div>
                         <label for="lockInPercent" class="block text-sm font-medium text-gray-700">Lock-in % of current green</label>
@@ -422,7 +427,6 @@
             // 2. Load Trade Log Data
             if (sessionData.tradeLog) {
                 // When loading, only load the data back into the first trades. 
-                // We rely on the initial state being cleared by clearLogAndStartNewDay()
                 sessionData.tradeLog.forEach((trade, index) => {
                     const i = index + 1;
                     if (document.getElementById(`result-${i}`)) {
@@ -466,6 +470,25 @@
             calculate();
 
             alert("New Trading Day Started. The previous session's data is saved and ready for export!");
+        }
+
+        function clearAllSavedData() {
+             const confirmDelete = confirm("WARNING: This will permanently DELETE ALL saved historical trade data from your browser. Have you exported your data?\n\nClick OK to permanently delete the entire saved session history.");
+            
+            if (!confirmDelete) return;
+
+            localStorage.removeItem('tradingSessionData');
+            
+            // Clear the currently visible log and recalculate to reflect the empty history
+            for (let i = 1; i <= NUM_TRADES; i++) {
+                if (document.getElementById(`result-${i}`)) {
+                    document.getElementById(`result-${i}`).value = '';
+                    document.getElementById(`screenshot-${i}`).value = '';
+                    document.getElementById(`notes-${i}`).value = '';
+                }
+            }
+            calculate();
+            alert("All saved historical data has been permanently deleted. Your session is now empty.");
         }
         // --- END SESSION MANAGEMENT LOGIC ---
 
@@ -523,7 +546,11 @@
             const headerCols = headerRow.querySelectorAll('th');
             let headerData = [];
             for (let i = 0; i < headerCols.length; i++) {
-                headerData.push(getCleanedValue(headerCols[i]));
+                // We only export the raw input data (Trade #, Actual Result, Screenshot Link, Notes)
+                // Discarding Recommended TP/SL, Realized P&L, and Lockout for a clean raw export.
+                if (i !== 1 && i !== 3 && i !== 4) {
+                    headerData.push(getCleanedValue(headerCols[i]));
+                }
             }
             csv.push("--- FULL SAVED TRADE HISTORY ---");
             csv.push(headerData.join(','));
@@ -533,29 +560,15 @@
             tradeLog.forEach((trade, index) => {
                 const i = index + 1; // Trade #
                 
-                // Since we don't have running P&L stored, we must re-calculate the running P&L 
-                // in the background to present a complete historical log. 
-                // NOTE: This relies on the saved settings being the same as the final saved settings,
-                // but for a clean export, we will simplify this by only exporting the raw logged data.
-                // For a true historical running P&L, more complex logic is needed.
-
-                let rowData = [
-                    i, // Trade #
-                    // Recommended TP/SL is discarded as it's dynamic; we only care about the result and notes
-                    'N/A', 
-                    trade.result, // Actual Result
-                    // Running P&L is complex to calculate here, so we use the raw result for this simplified export.
-                    trade.result, // We'll just put the individual result for simplicity in the 'P&L' column
-                    'N/A', // Lockout (discarded as it's complex to track historically)
-                    trade.screenshot, // Screenshot Link
-                    trade.notes // Notes
+                // Manually map to the simplified header order: Trade #, Actual Result, Screenshot Link, Notes
+                let finalRowData = [
+                    i, 
+                    trade.result,
+                    trade.screenshot,
+                    trade.notes
                 ];
                 
-                // For the Running P&L: If a full historical report is needed, the `calculate()` logic
-                // would have to be modified to iterate over this saved array, but for a simplified, clean CSV 
-                // of the entries, we export the raw data saved per trade.
-                
-                csv.push(rowData.map(item => getCleanedValue({value: item})).join(','));
+                csv.push(finalRowData.map(item => getCleanedValue({value: item})).join(','));
             });
 
             const csvString = csv.join('\n');
