@@ -139,7 +139,7 @@
                     <li><strong>Log Trades:</strong> After each trade, enter the P/L and log a <strong>Screenshot Link</strong> and <strong>Notes</strong> in the log below.</li>
                     <li><strong>Complete Journal:</strong> At the end of the session, fill out the <strong>R.E.A.L.I.S.T. Journal</strong> questions at the bottom.</li>
                     <li><strong>Save:</strong> Press <strong>Save Current Session</strong> to save your data to your browser or <strong>Clear Log & Start New Day</strong> if you are starting a new day.</li>
-                    <li><strong>Export Data:</strong> Click the <strong>Download buttons</strong> to save your saved Trade Log and separate Journal entries.</li>
+                    <li><strong>Export Data:</strong> Use the <strong>Download Trade Log (CSV)</strong> button to save your visible trades. Use the <strong>Download Current R.E.A.L.I.S.T. Journal (CSV)</strong> button at the bottom of the page to save your current on-screen journal answers.</li>
                 </ol>
             </div>
         </div>
@@ -161,22 +161,11 @@
                     class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
                     ✨ Clear Log & Start New Day
                 </button>
-                 <button 
-                    onclick="clearAllSavedData()" 
-                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                    🗑️ Clear All Saved Data
-                </button>
                 <button 
                     id="downloadTradeLogButton"
                     onclick="exportTradeLogToCSV()" 
                     class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
                     📊 Download Trade Log (CSV)
-                </button>
-                <button 
-                    id="downloadJournalButton"
-                    onclick="exportJournalToCSV()" 
-                    class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                    📝 Download R.E.A.L.I.S.T. Journal (CSV)
                 </button>
             </div>
         </div>
@@ -348,7 +337,16 @@
                     <textarea id="tomorrowPlan" rows="3" class="journal-input" placeholder="I will only trade between 9:30-10:00 AM, while taking a break after every trade. I will also..."></textarea>
                 </div>
             </div>
-        </div>
+
+            <div class="mt-6 pt-6 border-t border-gray-300">
+                <button 
+                    id="downloadCurrentJournalButton"
+                    onclick="exportCurrentJournalToCSV()" 
+                    class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm w-full sm:w-auto">
+                    📝 Download Current R.E.A.L.I.S.T. Journal (CSV)
+                </button>
+            </div>
+            </div>
 
     </div>
 
@@ -565,31 +563,12 @@
             // 4. Re-calculate to show the clean log and reset Trade #1's recommended size
             calculate();
 
-            alert("New Trading Day Started. The R.E.A.L.I.S.T. history is saved and ready for export!");
+            alert("New Trading Day Started. The R.E.A.L.I.S.T. history is saved!");
         }
 
-        function clearAllSavedData() {
-             const confirmDelete = confirm("WARNING: This will permanently DELETE ALL saved historical trade data from your browser. Have you exported your data?\n\nClick OK to permanently delete the entire saved session history.");
-            
-            if (!confirmDelete) return;
+        // --- FUNCTION REMOVED ---
+        // function clearAllSavedData() { ... }
 
-            localStorage.removeItem('tradingSessionData');
-            
-            // Clear the currently visible log and recalculate to reflect the empty history
-            for (let i = 1; i <= NUM_TRADES; i++) {
-                if (document.getElementById(`result-${i}`)) {
-                    document.getElementById(`result-${i}`).value = '';
-                    document.getElementById(`screenshot-${i}`).value = '';
-                    document.getElementById(`notes-${i}`).value = '';
-                }
-            }
-            
-            // Reset Date to Today
-            document.getElementById('sessionDate').value = new Date().toISOString().substring(0, 10);
-            
-            calculate();
-            alert("All saved historical data has been permanently deleted. Your session is now empty.");
-        }
         // --- END SESSION MANAGEMENT LOGIC ---
 
 
@@ -679,52 +658,40 @@
             alert(`Downloaded ${tradesFound} visible trade entries for ${sessionDate}.`);
         }
 
-        // --- (FIXED) EXPORT REALIST JOURNAL FUNCTION (PULLS ALL SAVED DATA) ---
-        function exportJournalToCSV() {
-            const sessionData = getSessionData();
-            // PULLS FROM THE HISTORICAL ARRAY
-            const realistLog = sessionData.realistHistory || []; 
+        // --- (NEW) EXPORT CURRENT ON-SCREEN REALIST JOURNAL ---
+        function exportCurrentJournalToCSV() {
+            const sessionDate = document.getElementById('sessionDate').value || new Date().toISOString().substring(0, 10);
             
-            if (realistLog.length === 0) {
-                 alert("Saved R.E.A.L.I.S.T. journal history is empty. (Use 'Clear Log & Start New Day' to save today's journal to history).");
-                 return;
-            }
-
-
             let csv = [];
-            
-            // 1. Define Header Row
-            csv.push('--- FULL SAVED REALIST JOURNAL HISTORY ---');
+            // 1. Define Header
+            csv.push('--- CURRENT R.E.A.L.I.S.T. JOURNAL ENTRY ---');
             csv.push('Date,Rating,Rating Reason,Earnings Note,Alignment Note,Learning Note,Improvement Note,Sorry Note,Tomorrow Plan');
 
+            // 2. Get current values from DOM
+            const ratingSelect = document.getElementById('ratingScore');
+            const ratingValue = ratingSelect.value;
+            const ratingOption = ratingSelect.querySelector(`option[value="${ratingValue}"]`);
+            const ratingDescription = ratingOption ? ratingOption.innerText : 'N/A';
 
-            // 2. Get Data Rows from SAVED LOG
-            realistLog.forEach(entry => {
-                // Get the text description for the rating score
-                const ratingSelect = document.getElementById('ratingScore');
-                const ratingOption = ratingSelect.querySelector(`option[value="${entry.ratingScore}"]`);
-                const ratingDescription = ratingOption ? ratingOption.innerText : 'N/A';
-                
-                let rowData = [
-                    entry.date || 'N/A',
-                    entry.ratingScore + ' - ' + ratingDescription,
-                    entry.ratingReason,
-                    entry.earningsNote,
-                    entry.alignmentNote,
-                    entry.learningNote,
-                    entry.improvementNote,
-                    entry.sorryNote,
-                    entry.tomorrowPlan
-                ];
-                
-                csv.push(rowData.map(item => getCleanedValue(item)).join(',')); // Use helper for data
-            });
-            
+            let rowData = [
+                sessionDate,
+                ratingValue + ' - ' + ratingDescription,
+                document.getElementById('ratingReason').value,
+                document.getElementById('earningsNote').value,
+                document.getElementById('alignmentNote').value,
+                document.getElementById('learningNote').value,
+                document.getElementById('improvementNote').value,
+                document.getElementById('sorryNote').value,
+                document.getElementById('tomorrowPlan').value
+            ];
+
+            csv.push(rowData.map(item => getCleanedValue(item)).join(',')); // Use helper for data
+
             const csvString = csv.join('\n');
-            const filename = `REALIST_Journal_History_${new Date().toLocaleDateString('en-CA').replace(/-/g, '')}.csv`;
+            const filename = `Current_REALIST_Journal_${sessionDate.replace(/-/g, '')}.csv`;
             
             downloadCSV(csvString, filename);
-            alert(`Downloaded ${realistLog.length} saved R.E.A.L.I.S.T. entries.`);
+            alert(`Downloaded current R.E.A.L.I.S.T. Journal entry for ${sessionDate}.`);
         }
         
         // --- CORE CALCULATION LOGIC ---
