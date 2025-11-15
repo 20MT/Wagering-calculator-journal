@@ -161,6 +161,11 @@
                     class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
                     ✨ Clear Log & Start New Day
                 </button>
+                 <button 
+                    onclick="clearAllSavedData()" 
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
+                    🗑️ Clear All Saved Data
+                </button>
                 <button 
                     id="downloadTradeLogButton"
                     onclick="exportTradeLogToCSV()" 
@@ -563,8 +568,30 @@
             alert("New Trading Day Started. The R.E.A.L.I.S.T. history is saved and ready for export!");
         }
 
-        // REMOVED 'clearAllSavedData' function as the button was removed.
-        // --- (REMOVED) clearAllSavedData() ---
+        function clearAllSavedData() {
+             const confirmDelete = confirm("WARNING: This will permanently DELETE ALL saved historical trade data from your browser. Have you exported your data?\n\nClick OK to permanently delete the entire saved session history.");
+            
+            if (!confirmDelete) return;
+
+            localStorage.removeItem('tradingSessionData');
+            
+            // Clear the currently visible log and recalculate to reflect the empty history
+            for (let i = 1; i <= NUM_TRADES; i++) {
+                if (document.getElementById(`result-${i}`)) {
+                    document.getElementById(`result-${i}`).value = '';
+                    document.getElementById(`screenshot-${i}`).value = '';
+                    document.getElementById(`notes-${i}`).value = '';
+                }
+            }
+            
+            // Reset Date to Today
+            document.getElementById('sessionDate').value = new Date().toISOString().substring(0, 10);
+            
+            calculate();
+            alert("All saved historical data has been permanently deleted. Your session is now empty.");
+        }
+        // --- END SESSION MANAGEMENT LOGIC ---
+
 
         // Utility function for downloading CSV
         function downloadCSV(csvString, filename) {
