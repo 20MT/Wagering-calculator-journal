@@ -4,291 +4,1016 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wagering Calculator & Journal</title>
-    <link rel="icon" type="image/png" href="logo3.png">
-    <link rel="apple-touch-icon" href="logo3.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #eef2f6;
+            --bg-accent: #e8eef5;
+            --surface: #ffffff;
+            --surface-muted: #f7f9fc;
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --border-strong: #cbd5e1;
+            --accent: #0f766e;
+            --accent-soft: #ccfbf1;
+            --accent-text: #115e59;
+            --danger: #dc2626;
+            --danger-soft: #fee2e2;
+            --warning: #d97706;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            --radius: 1rem;
+        }
+        html[data-theme="light"], html { color-scheme: light; }
         body {
-            font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+            font-family: "DM Sans", sans-serif;
+            background:
+                radial-gradient(1200px 500px at 10% -10%, #dbeafe 0%, transparent 55%),
+                radial-gradient(900px 420px at 100% 0%, #ccfbf1 0%, transparent 50%),
+                var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background-color 0.25s, color 0.25s;
         }
-        .table-cell {
-            padding: 0.75rem;
-            border: 1px solid #e5e7eb;
-            text-align: center;
+        body.dark-mode {
+            --bg: #0b1220;
+            --bg-accent: #111827;
+            --surface: #111827;
+            --surface-muted: #1a2333;
+            --text: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border: #243044;
+            --border-strong: #334155;
+            --accent: #2dd4bf;
+            --accent-soft: rgba(45, 212, 191, 0.12);
+            --accent-text: #99f6e4;
+            --danger: #f87171;
+            --danger-soft: rgba(248, 113, 113, 0.14);
+            --warning: #fbbf24;
+            --shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+            background:
+                radial-gradient(1000px 480px at 0% -10%, rgba(14, 116, 144, 0.25) 0%, transparent 55%),
+                radial-gradient(800px 400px at 100% 0%, rgba(15, 118, 110, 0.18) 0%, transparent 50%),
+                var(--bg);
+            color: var(--text);
         }
-        .header-cell {
-            background-color: #f9fafb;
+        .app-shell {
+            max-width: 72rem;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        @media (min-width: 768px) {
+            .app-shell { padding: 1.35rem 1.5rem; }
+        }
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) + 0.15rem);
+            box-shadow: var(--shadow);
+        }
+        .soft-panel {
+            background: var(--surface-muted);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .topbar {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.65rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.85rem;
+        }
+        .brand-block {
+            min-width: 0;
+        }
+        .brand-block h1 {
+            font-size: clamp(1.2rem, 2vw, 1.55rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            line-height: 1.2;
+        }
+        .brand-block p {
+            margin-top: 0.1rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .header-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.55rem 1.1rem;
+            flex-wrap: wrap;
+        }
+        .header-session {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: nowrap;
+            flex: 0 0 auto;
+            margin-left: auto;
+        }
+        .header-session .session-date-field {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex: 0 0 auto;
+            min-width: 0;
+        }
+        .header-session .session-date-field .setting-label {
+            margin-bottom: 0;
+            font-size: 0.72rem;
+            white-space: nowrap;
+        }
+        .header-session input[type="date"] {
+            width: auto;
+            min-width: 9.25rem;
+            padding: 0.35rem 0.55rem;
+            font-size: 0.82rem;
+            border-radius: 0.55rem;
+            height: 2.15rem;
+        }
+        .session-actions {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 0.4rem;
+            align-items: center;
+        }
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        @media (max-width: 640px) {
+            .header-session {
+                flex-wrap: wrap;
+                width: 100%;
+                margin-left: 0;
+            }
+            .session-actions {
+                flex-wrap: wrap;
+            }
+        }
+        .journal-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.55rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border);
+            background: var(--surface-muted);
+            font-size: 0.75rem;
             font-weight: 600;
+            color: var(--text-secondary);
         }
-        input[type="number"], input[type="text"], select, textarea {
-            border-radius: 0.375rem;
-            border: 1px solid #d1d5db;
-            padding: 0.5rem;
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.15rem;
+            height: 2.15rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border);
+            background: var(--surface-muted);
+            color: var(--text-secondary);
+            transition: background 0.15s, color 0.15s;
+        }
+        .icon-btn:hover { background: var(--accent-soft); color: var(--accent-text); }
+        .help-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.35rem 0.75rem;
+            height: 2.15rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border);
+            background: var(--surface-muted);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .help-toggle-btn:hover { background: var(--accent-soft); color: var(--accent-text); }
+        .help-toggle-btn[aria-expanded="true"] {
+            background: var(--accent-soft);
+            color: var(--accent-text);
+            border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+        }
+
+        .hero-metrics {
+            position: sticky;
+            top: 0.5rem;
+            z-index: 30;
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr;
+            gap: 0.65rem;
+            margin-bottom: 0.85rem;
+        }
+        body.simplified-on .hero-metrics {
+            grid-template-columns: minmax(0, 28rem);
+        }
+        body.simplified-on .account-derived-metric { display: none; }
+        @media (max-width: 900px) {
+            .hero-metrics { grid-template-columns: 1fr; position: relative; top: 0; }
+            body.simplified-on .hero-metrics { grid-template-columns: 1fr; }
+        }
+        .metric-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.7rem 0.9rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+        .metric-card.hero {
+            background: linear-gradient(145deg, #0f766e, #0e7490);
+            border: none;
+            color: white;
+        }
+        .metric-card.hero.is-locked {
+            background: linear-gradient(145deg, #b91c1c, #9f1239);
+        }
+        .metric-label {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+        }
+        .metric-card.hero .metric-label { color: rgba(255,255,255,0.82); }
+        .metric-value {
+            font-size: clamp(1.35rem, 2.6vw, 1.85rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+        }
+        .metric-card.hero .metric-value { font-size: clamp(1.65rem, 3.4vw, 2.2rem); }
+        .metric-hint {
+            margin-top: 0.15rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .metric-card.hero .metric-hint { color: rgba(255,255,255,0.78); }
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.85rem;
+        }
+        .settings-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.7rem 0.85rem 0.85rem;
+            margin-bottom: 0.85rem;
+            box-shadow: var(--shadow);
+        }
+        .settings-tabs {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 0.2rem;
+            padding: 0.2rem;
+            margin-bottom: 0.7rem;
+            border-radius: 9999px;
+            background: var(--surface-muted);
+            border: 1px solid var(--border);
+        }
+        .settings-tab {
+            appearance: none;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font: inherit;
+            font-size: 0.78rem;
+            font-weight: 650;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .settings-tab:hover { color: var(--text-secondary); }
+        .settings-tab[aria-selected="true"] {
+            background: var(--surface);
+            color: var(--accent-text);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+        }
+        body.dark-mode .settings-tab[aria-selected="true"] {
+            background: var(--surface-muted);
+            box-shadow: none;
+            border: 1px solid var(--border);
+        }
+        .settings-pane { display: none; }
+        .settings-pane.active { display: block; }
+        .settings-fields {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.65rem 0.85rem;
+            align-items: end;
+        }
+        .settings-fields.single-col {
+            grid-template-columns: minmax(0, 16rem);
+        }
+        @media (max-width: 700px) {
+            .settings-fields { grid-template-columns: 1fr; }
+            .settings-fields.single-col { grid-template-columns: 1fr; }
+        }
+        .field { margin-bottom: 0; }
+        .setting-label {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        .input-shell {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-shell .affix {
+            position: absolute;
+            right: 0.75rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            pointer-events: none;
+        }
+        .input-shell.has-prefix .affix-left {
+            left: 0.75rem;
+            right: auto;
+        }
+        .input-shell.has-prefix input { padding-left: 1.6rem; }
+        .input-shell.has-suffix input { padding-right: 1.7rem; }
+
+        input[type="number"], input[type="text"], input[type="date"], select, textarea {
             width: 100%;
+            border-radius: 0.6rem;
+            border: 1px solid var(--border-strong);
+            background: var(--surface);
+            color: var(--text);
+            padding: 0.5rem 0.65rem;
             box-sizing: border-box;
-            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+            transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+            font: inherit;
+            font-size: 0.9rem;
         }
-        /* Style for new text/journal fields */
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
         .journal-input {
             text-align: left;
-            padding-left: 0.5rem;
+            padding: 0.5rem 0.75rem;
         }
-        .lockout-red {
-            color: #dc2626;
-            font-weight: 700;
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            border-radius: 0.6rem;
+            border: 1px solid transparent;
+            padding: 0.4rem 0.7rem;
+            font-size: 0.78rem;
+            font-weight: 650;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, transform 0.12s;
+            height: 2.15rem;
+            white-space: nowrap;
         }
-        .profit-green {
-            color: #16a34a;
+        .btn:active { transform: translateY(1px); }
+        .btn-primary { background: var(--accent); color: white; }
+        body.dark-mode .btn-primary { color: #042f2e; }
+        .btn-primary:hover { filter: brightness(1.05); }
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-secondary);
+            border-color: var(--border-strong);
         }
-        .loss-red {
-            color: #dc2626;
+        .btn-secondary:hover { background: var(--surface-muted); }
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border-color: color-mix(in srgb, var(--danger) 35%, var(--border));
         }
-        .disabled-row {
-            background-color: #f3f4f6;
-            opacity: 0.7;
+        .btn-danger:hover { background: var(--danger-soft); }
+
+        .help-card {
+            margin-bottom: 0.85rem;
+            padding: 0.75rem 0.95rem;
+            border-radius: var(--radius);
+            border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+            background: var(--accent-soft);
+            color: var(--accent-text);
+            font-size: 0.85rem;
         }
-        /* Custom style for the rating select box */
-        #ratingScore {
-            max-width: 100px;
+        .help-card.hidden { margin-bottom: 0; padding: 0; border: 0; }
+        body.dark-mode .help-card { color: #99f6e4; }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface);
+        }
+        .table-cell {
+            padding: 0.7rem 0.65rem;
+            border-bottom: 1px solid var(--border);
             text-align: center;
+            font-size: 0.9rem;
+        }
+        .header-cell {
+            background: var(--surface-muted);
+            font-weight: 650;
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            position: sticky;
+            top: 0;
+        }
+        #tradeLogTable { width: 100%; border-collapse: collapse; }
+        #tradeLogTable tbody tr.is-active-row {
+            background: color-mix(in srgb, var(--accent-soft) 70%, transparent);
+        }
+        #tradeLogTable tbody tr.row-hidden { display: none; }
+        .result-input {
+            background: var(--surface) !important;
+            border-color: var(--accent) !important;
+            font-weight: 600;
+        }
+        .lockout-red { color: var(--danger); font-weight: 700; font-size: 0.8rem; }
+        .profit-green { color: #059669; }
+        .loss-red { color: var(--danger); }
+        body.dark-mode .profit-green { color: #34d399; }
+        .disabled-row { opacity: 0.55; }
+        .disabled-row input { pointer-events: none; }
+
+        body.journal-off .journal-only { display: none !important; }
+
+        body.simplified-on #settingsTab-ladder,
+        body.simplified-on #settingsPane-ladder {
+            display: none !important;
+        }
+
+        .switch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+        .switch {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .switch-track {
+            position: relative;
+            width: 2.75rem;
+            height: 1.5rem;
+            border-radius: 9999px;
+            background: #cbd5e1;
+            transition: background-color 0.15s ease;
+            flex-shrink: 0;
+        }
+        .switch-track::after {
+            content: "";
+            position: absolute;
+            top: 0.15rem;
+            left: 0.15rem;
+            width: 1.2rem;
+            height: 1.2rem;
+            border-radius: 9999px;
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+            transition: transform 0.15s ease;
+        }
+        .switch input:checked + .switch-track { background: var(--accent); }
+        .switch input:checked + .switch-track::after { transform: translateX(1.25rem); }
+        .switch input:focus-visible + .switch-track {
+            outline: 2px solid color-mix(in srgb, var(--accent) 50%, white);
+            outline-offset: 2px;
+        }
+        .switch-state {
+            min-width: 1.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        body.dark-mode .switch-track { background: #334155; }
+
+        .tooltip-wrap { position: relative; display: inline-flex; align-items: center; flex-shrink: 0; }
+        .tooltip-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border-strong);
+            color: var(--text-muted);
+            background: transparent;
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 1;
+            cursor: help;
+            padding: 0;
+        }
+        .tooltip-btn:hover, .tooltip-btn:focus-visible {
+            color: var(--accent-text);
+            border-color: var(--accent);
+            outline: none;
+        }
+        .metric-card.hero .tooltip-btn {
+            border-color: rgba(255,255,255,0.45);
+            color: rgba(255,255,255,0.85);
+        }
+        .tooltip-bubble {
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 0.4rem);
+            transform: translateX(-50%);
+            width: max-content;
+            max-width: 16rem;
+            padding: 0.5rem 0.65rem;
+            border-radius: 0.5rem;
+            background: #0f172a;
+            color: #f8fafc;
+            font-size: 0.75rem;
+            font-weight: 400;
+            line-height: 1.35;
+            text-align: left;
+            text-transform: none;
+            letter-spacing: normal;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.12s ease, visibility 0.12s ease;
+            z-index: 40;
+        }
+        .tooltip-bubble::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #0f172a;
+        }
+        .tooltip-wrap:hover .tooltip-bubble,
+        .tooltip-wrap:focus-within .tooltip-bubble {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .journal-section {
+            margin-top: 0.85rem;
+            padding: 0.75rem 0.9rem 0.9rem;
+        }
+        .journal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.65rem;
+        }
+        .journal-header h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text);
+        }
+        .journal-letter-tabs {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 0.15rem;
+            padding: 0.18rem;
+            margin-bottom: 0.65rem;
+            border-radius: 9999px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .journal-letter-tab {
+            appearance: none;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font: inherit;
+            font-size: 0.8rem;
+            font-weight: 700;
+            width: 2.1rem;
+            height: 2.1rem;
+            padding: 0;
+            border-radius: 9999px;
+            cursor: pointer;
+            flex: 1 1 0;
+            min-width: 2.1rem;
+            transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+        }
+        .journal-letter-tab:hover { color: var(--text-secondary); }
+        .journal-letter-tab[aria-selected="true"] {
+            background: var(--surface-muted);
+            color: var(--journal-accent, var(--accent-text));
+            box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--journal-accent, var(--accent)) 45%, transparent);
+        }
+        body.dark-mode .journal-letter-tab[aria-selected="true"] {
+            background: color-mix(in srgb, var(--journal-accent, var(--accent)) 18%, var(--surface-muted));
+        }
+        .journal-pane { display: none; }
+        .journal-pane.active { display: block; }
+        .journal-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--journal-accent, var(--accent));
+            border-radius: 0.75rem;
+            padding: 0.7rem 0.8rem;
+        }
+        .journal-card h3 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            margin: 0 0 0.45rem;
+            color: var(--journal-accent, var(--text));
+        }
+        .journal-card .setting-label { margin-bottom: 0.2rem; }
+        .journal-card textarea {
+            min-height: 0;
+            resize: vertical;
+            line-height: 1.4;
+        }
+        .journal-rating-row {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            margin-bottom: 0.5rem;
+        }
+        .journal-letter-tab[data-letter="R"], .journal-pane[data-letter="R"] { --journal-accent: #dc2626; }
+        .journal-letter-tab[data-letter="E"], .journal-pane[data-letter="E"] { --journal-accent: #2563eb; }
+        .journal-letter-tab[data-letter="A"], .journal-pane[data-letter="A"] { --journal-accent: #059669; }
+        .journal-letter-tab[data-letter="L"], .journal-pane[data-letter="L"] { --journal-accent: #d97706; }
+        .journal-letter-tab[data-letter="I"], .journal-pane[data-letter="I"] { --journal-accent: #7c3aed; }
+        .journal-letter-tab[data-letter="S"], .journal-pane[data-letter="S"] { --journal-accent: #0891b2; }
+        .journal-letter-tab[data-letter="T"], .journal-pane[data-letter="T"] { --journal-accent: #db2777; }
+
+        #ratingScore {
+            max-width: 11rem;
             appearance: none;
             -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%236b7280' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e");
+            padding: 0.5rem 1.75rem 0.5rem 0.75rem;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%2364748b' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e");
             background-repeat: no-repeat;
-            background-position: right 0.5rem center;
+            background-position: right 0.7rem center;
             background-size: 8px 10px;
         }
 
-        /* --- DARK MODE STYLES --- */
-        body.dark-mode {
-            background-color: #111827; /* Dark background */
-            color: #e5e7eb; /* Light text */
+        #toastHost {
+            position: fixed;
+            right: 1rem;
+            bottom: 1rem;
+            z-index: 80;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            pointer-events: none;
         }
-        body.dark-mode .max-w-7xl {
-            background-color: #1f2937; /* Darker card background */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+        .toast {
+            min-width: 12rem;
+            max-width: 20rem;
+            padding: 0.75rem 0.95rem;
+            border-radius: 0.8rem;
+            background: #0f172a;
+            color: #f8fafc;
+            font-size: 0.88rem;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(15,23,42,0.25);
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
         }
-        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
-            color: #f3f4f6;
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast-success { background: #0f766e; }
+        .toast-error { background: #b91c1c; }
+        body.dark-mode .toast-success { color: #042f2e; }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin: 0.85rem 0 0.55rem;
         }
-        body.dark-mode .border-gray-200, body.dark-mode .border {
-            border-color: #374151 !important;
+        .log-header h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
         }
-        body.dark-mode .bg-gray-50, body.dark-mode .bg-gray-100 {
-            background-color: #374151 !important;
-            border-color: #4b5563;
+        #tradeLogMeta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
         }
-        body.dark-mode .bg-white, body.dark-mode .bg-blue-50 {
-            background-color: #4b5563 !important;
-        }
-        /* Instruction Box Dark Mode Override */
-        body.dark-mode .instruction-box {
-            background-color: #1f2937 !important; /* Very dark background for contrast */
-            border-color: #3b82f6 !important; /* Blue border */
-            color: #dbeafe !important; /* Very light blue text */
-        }
-        /* Standard element overrides */
-        body.dark-mode .table-cell {
-            border-color: #4b5563;
-        }
-        body.dark-mode .header-cell {
-            background-color: #374151;
-            color: #f3f4f6;
-        }
-        body.dark-mode input[type="number"], body.dark-mode input[type="text"], body.dark-mode input[type="date"], body.dark-mode select, body.dark-mode textarea {
-            background-color: #1f2937;
-            color: #f3f4f6;
-            border-color: #4b5563;
-        }
-        body.dark-mode .text-gray-700 {
-            color: #d1d5db; /* Lighter labels */
-        }
-        body.dark-mode .text-gray-800, body.dark-mode .text-gray-900 {
-            color: #f3f4f6;
-        }
-        body.dark-mode .disabled-row {
-            background-color: #1f2937;
-            opacity: 0.5;
-        }
-        body.dark-mode #ratingScore {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23f3f4f6' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e"); /* Lighten dropdown arrow */
-        }
+        .hidden { display: none !important; }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-50 text-gray-800 p-4 sm:p-6 md:p-8">
-    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-md p-6">
-        <header class="mb-6 pb-4 border-b border-gray-200 flex justify-between items-center">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Wagering Calculator & Journal</h1>
-            <button id="darkModeToggle" onclick="toggleDarkMode()" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition duration-150">
-                <svg id="sunIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                <svg id="moonIcon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-            </button>
+<body>
+    <div id="toastHost" aria-live="polite"></div>
+    <div class="app-shell">
+        <header class="panel topbar">
+            <div class="brand-block">
+                <h1>Wagering Calculator</h1>
+                <p>Size the next trade from your daily risk rules</p>
+            </div>
+            <div class="header-toolbar">
+                <div class="header-controls">
+                    <button type="button" id="howToUseBtn" class="help-toggle-btn" onclick="toggleInstructions()" aria-expanded="false" aria-controls="instructionsBox" aria-label="Instructions">
+                        Instructions
+                    </button>
+                    <div class="journal-toggle">
+                        <span class="setting-label" style="margin:0">
+                            <span>Simplified</span>
+                            <span class="tooltip-wrap">
+                                <button type="button" class="tooltip-btn" aria-label="About Simplified Mode">?</button>
+                                <span class="tooltip-bubble" role="tooltip">On: a simpler method using a starting risk you’re comfortable with. Off: the advanced method — Kelly criterion based on your account balance.</span>
+                            </span>
+                        </span>
+                        <label class="switch" for="simplifiedMode">
+                            <input type="checkbox" id="simplifiedMode" onchange="setSimplifiedEnabled(this.checked); updateSwitchLabel(this);">
+                            <span class="switch-track" aria-hidden="true"></span>
+                            <span class="switch-state" data-switch-label>Off</span>
+                        </label>
+                    </div>
+                    <div class="journal-toggle">
+                        <span class="setting-label" style="margin:0">
+                            <span>Journal</span>
+                            <span class="tooltip-wrap">
+                                <button type="button" class="tooltip-btn" aria-label="About Journal Toggle">?</button>
+                                <span class="tooltip-bubble" role="tooltip">Turn On to show the R.E.A.L.I.S.T. journal plus Screenshot and Notes columns in the trade log.</span>
+                            </span>
+                        </span>
+                        <label class="switch" for="journalEnabled">
+                            <input type="checkbox" id="journalEnabled" onchange="setJournalEnabled(this.checked); updateSwitchLabel(this);">
+                            <span class="switch-track" aria-hidden="true"></span>
+                            <span class="switch-state" data-switch-label>Off</span>
+                        </label>
+                    </div>
+                    <button id="darkModeToggle" onclick="toggleDarkMode()" class="icon-btn" aria-label="Toggle dark mode">
+                        <svg id="sunIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg id="moonIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    </button>
+                </div>
+                <div class="header-session">
+                    <div class="session-date-field">
+                        <label for="sessionDate" class="setting-label">Session date</label>
+                        <input type="date" id="sessionDate" value="" aria-label="Session date">
+                    </div>
+                    <div class="session-actions">
+                        <button type="button" onclick="saveSession()" class="btn btn-primary">Save</button>
+                        <button type="button" onclick="exportTradeLogToCSV()" class="btn btn-secondary">Export</button>
+                        <button type="button" onclick="clearLogAndStartNewDay()" class="btn btn-danger">New day</button>
+                    </div>
+                </div>
+            </div>
         </header>
-        
-        <div id="instructionsBox" class="mt-2 p-3 bg-blue-100 border border-blue-200 rounded-lg text-sm text-blue-900 instruction-box">
-            <div id="instructionsHeader" class="font-semibold mb-1 cursor-pointer flex justify-between items-center" onclick="toggleInstructions()">
-                <h2>How to Use This Tool:</h2>
-                <span id="toggleArrow" class="transform transition-transform duration-300">▼</span>
-            </div>
-            <div id="instructionsContent" class="hidden pt-2 border-t border-blue-200 mt-2">
-                <ol class="list-decimal list-inside space-y-1">
-                    <li><strong>Set Up Your Day:</strong> Enter your account and trade parameters in the boxes above.</li>
-                    <li><strong>Log Trades:</strong> After each trade, enter the P/L and log a <strong>Screenshot Link</strong> and <strong>Notes</strong> in the log below.</li>
-                    <li><strong>Complete Journal:</strong> At the end of the session, fill out the <strong>R.E.A.L.I.S.T. Journal</strong> questions at the bottom.</li>
-                    <li><strong>Save:</strong> Press <strong>Save Current Session</strong> to save your data to your browser or <strong>Clear Log & Start New Day</strong> if you are starting a new day.</li>
-                    <li><strong>Export Data:</strong> Use the <strong>Download Trade Log (CSV)</strong> button to save your visible trades. Use the <strong>Download Current R.E.A.L.I.S.T. Journal (CSV)</strong> button at the bottom of the page to save your current on-screen journal answers.</li>
-                </ol>
+
+        <div id="instructionsBox" class="help-card hidden" role="region" aria-labelledby="howToUseBtn">
+            <div id="instructionsContent">
+                <!-- Filled by updateInstructionsContent() based on Simplified mode -->
             </div>
         </div>
 
-        <div class="mt-6 p-4 bg-gray-100 rounded-lg border border-gray-200">
-            <div class="mb-4">
-                <label for="sessionDate" class="block text-sm font-semibold text-gray-700 mb-1">Today's Session Date:</label>
-                <input type="date" id="sessionDate" class="w-full sm:w-1/3 mt-1" value="">
+        <section class="hero-metrics" aria-label="Key metrics">
+            <div class="metric-card hero" id="nextTradeCard">
+                <div id="tpslLabel" class="metric-label">
+                    <span>Next Risk</span>
+                    <span class="tooltip-wrap">
+                        <button type="button" class="tooltip-btn" aria-label="About Next Risk">?</button>
+                        <span id="nextRiskTooltip" class="tooltip-bubble" role="tooltip">Dollar stop-loss (risk) amount for your next trade — the SL size. You can still target a different reward ratio (for example 1:2) separately. Trade 1 uses 50% of Daily Loss Lockout; later trades use ladder rules or 50% of remaining buffer.</span>
+                    </span>
+                </div>
+                <div id="nextTradeSize" class="metric-value">$0.00</div>
+                <div class="metric-hint">Use this as your risk target for the next entry</div>
+            </div>
+            <div class="metric-card account-derived-metric" id="trailingDrawdownCard">
+                <div class="metric-label">
+                    <span>Trailing Drawdown</span>
+                    <span class="tooltip-wrap">
+                        <button type="button" class="tooltip-btn" aria-label="About Trailing Drawdown">?</button>
+                        <span class="tooltip-bubble" role="tooltip">Remaining trailing drawdown room (cushion) above your account floor: Current Balance − Maximum Loss Limit.</span>
+                    </span>
+                </div>
+                <div id="fullStack" class="metric-value">$0.00</div>
+                <div class="metric-hint">Balance − max loss limit</div>
+            </div>
+            <div class="metric-card account-derived-metric" id="dailyLossLockoutCard">
+                <div class="metric-label">
+                    <span>Daily Loss Lockout</span>
+                    <span class="tooltip-wrap">
+                        <button type="button" class="tooltip-btn" aria-label="About Daily Loss Lockout">?</button>
+                        <span class="tooltip-bubble" role="tooltip">Max you can lose today before the tool locks you out. Equal to Trailing Drawdown × Loss Lockout %.</span>
+                    </span>
+                </div>
+                <div id="dailyLossLockout" class="metric-value">$0.00</div>
+            </div>
+        </section>
+
+        <section class="settings-panel" aria-label="Settings">
+            <div class="settings-tabs" role="tablist" aria-label="Settings sections">
+                <button type="button" class="settings-tab" role="tab" id="settingsTab-account" aria-controls="settingsPane-account" aria-selected="true" data-settings-tab="account" onclick="setSettingsTab('account')">Account</button>
+                <button type="button" class="settings-tab" role="tab" id="settingsTab-ladder" aria-controls="settingsPane-ladder" aria-selected="false" data-settings-tab="ladder" onclick="setSettingsTab('ladder')">Ladder</button>
+                <button type="button" class="settings-tab" role="tab" id="settingsTab-sizing" aria-controls="settingsPane-sizing" aria-selected="false" data-settings-tab="sizing" onclick="setSettingsTab('sizing')">Setting</button>
             </div>
 
-            <div class="flex justify-start items-center flex-wrap gap-3 pt-2 border-t border-gray-300">
-                 <button 
-                    onclick="saveSession()" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                    💾 Save Current Session
-                </button>
-                 <button 
-                    onclick="clearLogAndStartNewDay()" 
-                    class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                    ✨ Clear Log & Start New Day
-                </button>
-                <button 
-                    id="downloadTradeLogButton"
-                    onclick="exportTradeLogToCSV()" 
-                    class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm">
-                    📊 Download Trade Log (CSV)
-                </button>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6">
-            <div class="bg-gray-50 p-4 rounded-lg border">
-                <h3 class="font-semibold text-lg mb-3">Account Setup</h3>
-                <div class="space-y-3">
-                    <div>
-                        <label for="currentBalance" class="block text-sm font-medium text-gray-700">Current Balance ($)</label>
-                        <input type="number" id="currentBalance" value="50000" class="mt-1">
+            <div id="settingsPane-account" class="settings-pane active" role="tabpanel" aria-labelledby="settingsTab-account" data-settings-pane="account">
+                <div id="accountSettingsFields" class="settings-fields">
+                    <div class="field">
+                        <label for="currentBalance" class="setting-label">
+                            <span>Current Balance</span>
+                            <span class="tooltip-wrap">
+                                <button type="button" class="tooltip-btn" aria-label="About Current Balance">?</button>
+                                <span class="tooltip-bubble" role="tooltip">Your account equity right now. Used with Maximum Loss Limit to calculate Trailing Drawdown.</span>
+                            </span>
+                        </label>
+                        <div class="input-shell has-prefix">
+                            <span class="affix affix-left">$</span>
+                            <input type="number" id="currentBalance" value="50000">
+                        </div>
                     </div>
-                    <div>
-                        <label for="maxLossLimit" class="block text-sm font-medium text-gray-700">Maximum Loss Limit ($)</label>
-                        <input type="number" id="maxLossLimit" value="48000" class="mt-1">
+                    <div class="field">
+                        <label for="maxLossLimit" class="setting-label">
+                            <span>Maximum Loss Limit</span>
+                            <span class="tooltip-wrap">
+                                <button type="button" class="tooltip-btn" aria-label="About Maximum Loss Limit">?</button>
+                                <span class="tooltip-bubble" role="tooltip">The account floor you cannot breach (for example a drawdown floor or liquidation level). Trailing Drawdown = Current Balance − this value.</span>
+                            </span>
+                        </label>
+                        <div class="input-shell has-prefix">
+                            <span class="affix affix-left">$</span>
+                            <input type="number" id="maxLossLimit" value="48000">
+                        </div>
                     </div>
-                    <div>
-                        <label for="lossLockoutPercent" class="block text-sm font-medium text-gray-700">Loss Lockout %</label>
-                        <input type="number" id="lossLockoutPercent" value="0.10" step="0.001" class="mt-1">
+                    <div class="field">
+                        <label for="lossLockoutPercent" class="setting-label">
+                            <span>Loss Lockout</span>
+                            <span class="tooltip-wrap">
+                                <button type="button" class="tooltip-btn" aria-label="About Loss Lockout Percent">?</button>
+                                <span class="tooltip-bubble" role="tooltip">Percent of Trailing Drawdown you are willing to lose in one day. Enter as a whole percent (10 = 10%). Daily Loss Lockout = Trailing Drawdown × this %.</span>
+                            </span>
+                        </label>
+                        <div class="input-shell has-suffix">
+                            <input type="number" id="lossLockoutPercent" value="10" step="0.1" min="0">
+                            <span class="affix">%</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="simplifiedSettingsFields" class="settings-fields single-col" hidden>
+                    <div class="field">
+                        <label for="simplifiedStartRisk" class="setting-label">
+                            <span>Starting trade size</span>
+                            <span class="tooltip-wrap">
+                                <button type="button" class="tooltip-btn" aria-label="About Starting Trade Size">?</button>
+                                <span class="tooltip-bubble" role="tooltip">Dollar risk for Trade 1 in Simplified mode. After a win, next risk is 25% of current realized profit. Any loss ends the session. Round-down (Setting tab) still applies.</span>
+                            </span>
+                        </label>
+                        <div class="input-shell has-prefix">
+                            <span class="affix affix-left">$</span>
+                            <input type="number" id="simplifiedStartRisk" value="200" min="0" step="1">
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-50 p-4 rounded-lg border">
-                <h3 class="font-semibold text-lg mb-3">Trade Setup</h3>
-                <div class="space-y-3">
-                    <div>
-                        <label for="tradeRange" class="block text-sm font-medium text-gray-700">Trade Range (Points)</label>
-                        <input type="number" id="tradeRange" value="10" class="mt-1">
+
+            <div id="settingsPane-ladder" class="settings-pane" role="tabpanel" aria-labelledby="settingsTab-ladder" data-settings-pane="ladder" hidden>
+                <div id="ladderSettingsFields" class="settings-fields">
+                    <div class="field">
+                        <div class="switch-row">
+                            <label for="autoLadder" class="setting-label" style="margin:0">
+                                <span>Auto Ladder when Green</span>
+                                <span class="tooltip-wrap">
+                                    <button type="button" class="tooltip-btn" aria-label="About Auto Ladder">?</button>
+                                    <span class="tooltip-bubble" role="tooltip">When On and you are green, risk only unlocked profit instead of half the remaining daily buffer. A losing trade while laddering triggers a Ladder Loss lockout.</span>
+                                </span>
+                            </label>
+                            <label class="switch" for="autoLadder">
+                                <input type="checkbox" id="autoLadder" checked onchange="updateSwitchLabel(this)">
+                                <span class="switch-track" aria-hidden="true"></span>
+                                <span class="switch-state" data-switch-label>On</span>
+                            </label>
+                        </div>
                     </div>
-                     <div class="text-sm text-gray-500 pt-2">
-                        <p>Point Value is fixed at $2.00 for MNQ.</p>
+                    <div class="field">
+                        <label for="minProfitToKeep" class="setting-label">
+                            <span>Absolute minimum profit</span>
+                            <span class="tooltip-wrap">
+                                <button type="button" class="tooltip-btn" aria-label="About Absolute Minimum Profit">?</button>
+                                <span class="tooltip-bubble" role="tooltip">Hard dollar floor of profit to protect. Laddering only starts once realized P&amp;L reaches this amount, and that floor is never put back at risk.</span>
+                            </span>
+                        </label>
+                        <div class="input-shell has-prefix">
+                            <span class="affix affix-left">$</span>
+                            <input type="number" id="minProfitToKeep" value="0">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="lockInPercent" class="setting-label">
+                            <span>Risk % of profit</span>
+                            <span class="tooltip-wrap">
+                                <button type="button" class="tooltip-btn" aria-label="About Risk % of Profit">?</button>
+                                <span class="tooltip-bubble" role="tooltip">Percent of current green you risk on the next trade (25 = 25%). Example: 25% risks a quarter of profit — same as locking in 75%. Never risks below Absolute minimum profit.</span>
+                            </span>
+                        </label>
+                        <div class="input-shell has-suffix">
+                            <input type="number" id="lockInPercent" value="25" step="1" min="0" max="100">
+                            <span class="affix">%</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-50 p-4 rounded-lg border">
-                <h3 class="font-semibold text-lg mb-3">Ladder Logic</h3>
-                <div class="space-y-3">
-                    <div>
-                        <label for="autoLadder" class="block text-sm font-medium text-gray-700">Auto Ladder when Green?</label>
-                        <select id="autoLadder" class="mt-1">
-                            <option value="true" selected>On</option>
-                            <option value="false">Off</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="minProfitToKeep" class="block text-sm font-medium text-gray-700">Absolute minimum profit ($)</label>
-                        <input type="number" id="minProfitToKeep" value="0" class="mt-1"> 
-                    </div>
-                    <div>
-                        <label for="lockInPercent" class="block text-sm font-medium text-gray-700">Lock-in % of current green</label>
-                        <input type="number" id="lockInPercent" value="0.75" step="0.01" class="mt-1">
+
+            <div id="settingsPane-sizing" class="settings-pane" role="tabpanel" aria-labelledby="settingsTab-sizing" data-settings-pane="sizing" hidden>
+                <div class="settings-fields single-col">
+                    <div class="field">
+                        <label for="roundDown" class="setting-label">
+                            <span>Round down to nearest</span>
+                            <span class="tooltip-wrap">
+                                <button type="button" class="tooltip-btn" aria-label="About Round Down">?</button>
+                                <span class="tooltip-bubble" role="tooltip">Recommended Risk is floored to this dollar increment (for example 5 rounds $47 down to $45) so size stays simple and slightly conservative.</span>
+                            </span>
+                        </label>
+                        <div class="input-shell has-prefix">
+                            <span class="affix affix-left">$</span>
+                            <input type="number" id="roundDown" value="5" step="1">
+                        </div>
                     </div>
                 </div>
             </div>
-             <div class="bg-gray-50 p-4 rounded-lg border">
-                <h3 class="font-semibold text-lg mb-3">Sizing Parameters</h3>
-                 <div class="space-y-3">
-                    <div>
-                        <label for="roundDown" class="block text-sm font-medium text-gray-700">Round down to nearest $</label>
-                        <input type="number" id="roundDown" value="5" step="1" class="mt-1">
-                    </div>
-                    <div>
-                        <label for="feePerContract" class="block text-sm font-medium text-gray-700">Fee per Contract ($)</label>
-                        <input type="number" id="feePerContract" value="0.74" step="0.01" class="mt-1">
-                    </div>
-                </div>
-            </div>
+        </section>
+
+        <div class="log-header">
+            <h2>Trade Log</h2>
+            <div id="tradeLogMeta">Showing your next trade row</div>
+        </div>
+        <div class="table-wrap">
+            <table id="tradeLogTable">
+                <thead>
+                    <tr>
+                        <th class="table-cell header-cell w-16">#</th>
+                        <th class="table-cell header-cell">Recommended Risk</th>
+                        <th class="table-cell header-cell">Actual Result</th>
+                        <th class="table-cell header-cell">Realized P&amp;L</th>
+                        <th class="table-cell header-cell">Lockout</th>
+                        <th class="table-cell header-cell journal-only">Screenshot</th>
+                        <th class="table-cell header-cell journal-only">Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="trade-rows"></tbody>
+            </table>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-6">
-            <div class="bg-emerald-600 text-white p-4 rounded-lg shadow-lg">
-                <p class="text-sm font-medium text-emerald-200">Full Stack ($)</p>
-                <p id="fullStack" class="text-2xl font-bold"></p>
+        <div id="realistJournalSection" class="journal-only soft-panel journal-section">
+            <div class="journal-header">
+                <h2>R.E.A.L.I.S.T. Journal</h2>
+                <button type="button" id="downloadCurrentJournalButton" onclick="exportCurrentJournalToCSV()" class="btn btn-secondary">Export journal CSV</button>
             </div>
-            <div class="bg-amber-500 text-white p-4 rounded-lg shadow-lg">
-                <p class="text-sm font-medium text-amber-100">Daily Loss Lockout ($)</p>
-                <p id="dailyLossLockout" class="text-2xl font-bold"></p>
+            <div class="journal-letter-tabs" role="tablist" aria-label="R.E.A.L.I.S.T. journal sections">
+                <button type="button" class="journal-letter-tab" role="tab" id="realistTab-R" aria-controls="realistPane-R" aria-selected="true" data-letter="R" onclick="setRealistTab('R')">R</button>
+                <button type="button" class="journal-letter-tab" role="tab" id="realistTab-E" aria-controls="realistPane-E" aria-selected="false" data-letter="E" onclick="setRealistTab('E')">E</button>
+                <button type="button" class="journal-letter-tab" role="tab" id="realistTab-A" aria-controls="realistPane-A" aria-selected="false" data-letter="A" onclick="setRealistTab('A')">A</button>
+                <button type="button" class="journal-letter-tab" role="tab" id="realistTab-L" aria-controls="realistPane-L" aria-selected="false" data-letter="L" onclick="setRealistTab('L')">L</button>
+                <button type="button" class="journal-letter-tab" role="tab" id="realistTab-I" aria-controls="realistPane-I" aria-selected="false" data-letter="I" onclick="setRealistTab('I')">I</button>
+                <button type="button" class="journal-letter-tab" role="tab" id="realistTab-S" aria-controls="realistPane-S" aria-selected="false" data-letter="S" onclick="setRealistTab('S')">S</button>
+                <button type="button" class="journal-letter-tab" role="tab" id="realistTab-T" aria-controls="realistPane-T" aria-selected="false" data-letter="T" onclick="setRealistTab('T')">T</button>
             </div>
-            <div class="bg-blue-600 text-white p-4 rounded-lg shadow-lg">
-                <p id="tpslLabel" class="text-sm font-medium text-blue-200">TP/SL SETTINGS ($)</p>
-                <p id="nextTradeSize" class="text-2xl font-bold"></p>
-            </div>
-            <div class="bg-violet-600 text-white p-4 rounded-lg shadow-lg">
-                <p class="text-sm font-medium text-violet-200">NUMBER OF CONTRACTS</p>
-                <p id="numContracts" class="text-2xl font-bold">0</p>
-            </div>
-        </div>
-        
-        <div class="mt-8 pt-6 border-t">
-             <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Trade Log</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 border" id="tradeLogTable">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="table-cell header-cell w-16">Trade #</th>
-                            <th class="table-cell header-cell">Recommended TP/SL ($)</th>
-                            <th class="table-cell header-cell bg-blue-100">Actual Result ($)</th>
-                            <th class="table-cell header-cell">Realized P&L ($)</th>
-                            <th class="table-cell header-cell">Lockout</th>
-                            <th class="table-cell header-cell bg-gray-100">Screenshot Link</th>
-                            <th class="table-cell header-cell bg-gray-100">Notes / Rationale</th>
-                        </tr>
-                    </thead>
-                    <tbody id="trade-rows" class="bg-white divide-y divide-gray-200">
-                        </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <hr class="mt-12 mb-6 border-gray-300">
 
-        <div class="mt-8 p-6 bg-gray-100 rounded-xl shadow-inner">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                THE R.E.A.L.I.S.T. JOURNAL 📝
-            </h2>
-            <div class="space-y-6">
-                <div class="p-4 bg-white rounded-lg border border-gray-200">
-                    <h3 class="font-semibold text-lg text-red-600 mb-2">R - Rate</h3>
-                    <div class="flex items-center space-x-4 mb-3">
-                        <label for="ratingScore" class="block text-sm font-medium text-gray-700">Rating (1 to 5):</label>
-                        <select id="ratingScore" class="mt-1">
+            <div id="realistPane-R" class="journal-pane active" role="tabpanel" aria-labelledby="realistTab-R" data-letter="R">
+                <div class="journal-card">
+                    <h3>R — Rate</h3>
+                    <div class="journal-rating-row">
+                        <label for="ratingScore" class="setting-label" style="margin:0">Rating</label>
+                        <select id="ratingScore">
                             <option value="5">5 - Excellent</option>
                             <option value="4">4 - Good</option>
                             <option value="3" selected>3 - Average</option>
@@ -296,63 +1021,56 @@
                             <option value="1">1 - Terrible</option>
                         </select>
                     </div>
-                    <div>
-                        <label for="ratingReason" class="block text-sm font-medium text-gray-700 mb-1">Why did you give it that score?</label>
-                        <textarea id="ratingReason" rows="2" class="journal-input" placeholder="My score reflects my discipline and market read..."></textarea>
-                    </div>
+                    <label for="ratingReason" class="setting-label">Why did you give it that score?</label>
+                    <textarea id="ratingReason" rows="2" class="journal-input" placeholder="My score reflects my discipline and market read..."></textarea>
                 </div>
-
-                <div class="p-4 bg-white rounded-lg border border-gray-200">
-                    <h3 class="font-semibold text-lg text-blue-600 mb-2">E - Earnings</h3>
-                    <label for="earningsNote" class="block text-sm font-medium text-gray-700 mb-1">Were you profitable today? If not, what was the loss and why?</label>
+            </div>
+            <div id="realistPane-E" class="journal-pane" role="tabpanel" aria-labelledby="realistTab-E" data-letter="E" hidden>
+                <div class="journal-card">
+                    <h3>E — Earnings</h3>
+                    <label for="earningsNote" class="setting-label">Were you profitable today? If not, what was the loss and why?</label>
                     <textarea id="earningsNote" rows="2" class="journal-input" placeholder="I was profitable by $175 and locked out according to the wagering strategy..."></textarea>
                 </div>
-                
-                <div class="p-4 bg-white rounded-lg border border-gray-200">
-                    <h3 class="font-semibold text-lg text-emerald-600 mb-2">A - Alignment</h3>
-                    <label for="alignmentNote" class="block text-sm font-medium text-gray-700 mb-1">Did you follow your trading strategy today? If not, what caused you to go off-strategy?</label>
+            </div>
+            <div id="realistPane-A" class="journal-pane" role="tabpanel" aria-labelledby="realistTab-A" data-letter="A" hidden>
+                <div class="journal-card">
+                    <h3>A — Alignment</h3>
+                    <label for="alignmentNote" class="setting-label">Did you follow your trading strategy today?</label>
                     <textarea id="alignmentNote" rows="2" class="journal-input" placeholder="Yes, I stuck to my plan, or No, fear/greed caused me to..."></textarea>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="p-4 bg-white rounded-lg border border-gray-200">
-                        <h3 class="font-semibold text-lg text-amber-600 mb-2">L - Learning</h3>
-                        <label for="learningNote" class="block text-sm font-medium text-gray-700 mb-1">What did you learn from the market, your behavior, or your decisions today?</label>
-                        <textarea id="learningNote" rows="3" class="journal-input" placeholder="I do well when I walk away after each trade..."></textarea>
-                    </div>
-                    <div class="p-4 bg-white rounded-lg border border-gray-200">
-                        <h3 class="font-semibold text-lg text-purple-600 mb-2">I - Improvements</h3>
-                        <label for="improvementNote" class="block text-sm font-medium text-gray-700 mb-1">What could you have done better? How will you correct or prevent that?</label>
-                        <textarea id="improvementNote" rows="3" class="journal-input" placeholder="I should have waited for confirmation. Next time, I will..."></textarea>
-                    </div>
-                </div>
-
-                <div class="p-4 bg-white rounded-lg border border-gray-200">
-                    <h3 class="font-semibold text-lg text-cyan-600 mb-2">S - Sorry</h3>
-                    <label for="sorryNote" class="block text-sm font-medium text-gray-700 mb-1">Do you regret any trades? What would you change if you could redo it?</label>
-                    <textarea id="sorryNote" rows="2" class="journal-input" placeholder="I regret Trade #4. It was a FOMO trade. Next time I will..."></textarea>
-                </div>
-
-                <div class="p-4 bg-white rounded-lg border border-gray-200">
-                    <h3 class="font-semibold text-lg text-pink-600 mb-2">T - Trading Plan (Tomorrow)</h3>
-                    <label for="tomorrowPlan" class="block text-sm font-medium text-gray-700 mb-1">What's your exact plan for tomorrow's trading? Be specific.</label>
-                    <textarea id="tomorrowPlan" rows="3" class="journal-input" placeholder="I will only trade between 9:30-10:00 AM, while taking a break after every trade. I will also..."></textarea>
+            </div>
+            <div id="realistPane-L" class="journal-pane" role="tabpanel" aria-labelledby="realistTab-L" data-letter="L" hidden>
+                <div class="journal-card">
+                    <h3>L — Learning</h3>
+                    <label for="learningNote" class="setting-label">What did you learn today?</label>
+                    <textarea id="learningNote" rows="2" class="journal-input" placeholder="I do well when I walk away after each trade..."></textarea>
                 </div>
             </div>
-
-            <div class="mt-6 pt-6 border-t border-gray-300">
-                <button 
-                    id="downloadCurrentJournalButton"
-                    onclick="exportCurrentJournalToCSV()" 
-                    class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out text-sm w-full sm:w-auto">
-                    📝 Download Current R.E.A.L.I.S.T. Journal (CSV)
-                </button>
+            <div id="realistPane-I" class="journal-pane" role="tabpanel" aria-labelledby="realistTab-I" data-letter="I" hidden>
+                <div class="journal-card">
+                    <h3>I — Improvements</h3>
+                    <label for="improvementNote" class="setting-label">What could you have done better?</label>
+                    <textarea id="improvementNote" rows="2" class="journal-input" placeholder="I should have waited for confirmation..."></textarea>
+                </div>
             </div>
+            <div id="realistPane-S" class="journal-pane" role="tabpanel" aria-labelledby="realistTab-S" data-letter="S" hidden>
+                <div class="journal-card">
+                    <h3>S — Sorry</h3>
+                    <label for="sorryNote" class="setting-label">Do you regret any trades?</label>
+                    <textarea id="sorryNote" rows="2" class="journal-input" placeholder="I regret Trade #4. It was a FOMO trade..."></textarea>
+                </div>
             </div>
-
+            <div id="realistPane-T" class="journal-pane" role="tabpanel" aria-labelledby="realistTab-T" data-letter="T" hidden>
+                <div class="journal-card">
+                    <h3>T — Trading Plan (Tomorrow)</h3>
+                    <label for="tomorrowPlan" class="setting-label">What's your exact plan for tomorrow?</label>
+                    <textarea id="tomorrowPlan" rows="2" class="journal-input" placeholder="I will only trade between 9:30-10:00 AM..."></textarea>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script>
+<script>
         // --- DARK MODE LOGIC START ---
         function toggleDarkMode() {
             const body = document.body;
@@ -380,12 +1098,127 @@
         }
         // --- DARK MODE LOGIC END ---
 
+        function isJournalEnabled() {
+            return !document.body.classList.contains('journal-off');
+        }
+
+        function updateSwitchLabel(input) {
+            const label = input.closest('.switch')?.querySelector('[data-switch-label]');
+            if (label) {
+                label.textContent = input.checked ? 'On' : 'Off';
+            }
+        }
+
+        function setControlValue(element, value) {
+            if (!element) return;
+            if (element.type === 'checkbox') {
+                if (typeof value === 'boolean') {
+                    element.checked = value;
+                } else {
+                    element.checked = value === true || value === 'true' || value === 'enabled';
+                }
+                updateSwitchLabel(element);
+                return;
+            }
+            element.value = value;
+        }
+
+        function getControlValue(element) {
+            if (!element) return '';
+            if (element.type === 'checkbox') {
+                return element.checked ? 'true' : 'false';
+            }
+            return element.value;
+        }
+
+        function setJournalEnabled(enabled) {
+            document.body.classList.toggle('journal-off', !enabled);
+            localStorage.setItem('journalEnabled', enabled ? 'enabled' : 'disabled');
+            const toggle = document.getElementById('journalEnabled');
+            if (toggle) {
+                toggle.checked = !!enabled;
+                updateSwitchLabel(toggle);
+            }
+        }
+
+        function loadJournalPreference() {
+            // Default Off unless the user previously turned it on
+            const enabled = localStorage.getItem('journalEnabled') === 'enabled';
+            setJournalEnabled(enabled);
+        }
+        // --- JOURNAL TOGGLE END ---
+
+        const NEXT_RISK_TOOLTIP_DEFAULT = 'Dollar stop-loss (risk) amount for your next trade — the SL size. You can still target a different reward ratio (for example 1:2) separately. Trade 1 uses 50% of Daily Loss Lockout; later trades use ladder rules or 50% of remaining buffer.';
+        const NEXT_RISK_TOOLTIP_SIMPLIFIED = 'Dollar stop-loss (risk) amount for your next trade — the SL size. Simplified mode: Trade 1 uses your Starting trade size; after a win, next risk is 25% of current realized profit; any loss ends the session.';
+
+        function isSimplifiedEnabled() {
+            const toggle = document.getElementById('simplifiedMode');
+            return !!(toggle && toggle.checked);
+        }
+
+        function updateNextRiskTooltip(simplified) {
+            const tip = document.getElementById('nextRiskTooltip');
+            if (tip) {
+                tip.textContent = simplified ? NEXT_RISK_TOOLTIP_SIMPLIFIED : NEXT_RISK_TOOLTIP_DEFAULT;
+            }
+        }
+
+        function updateUIForSimplified(simplified) {
+            document.body.classList.toggle('simplified-on', !!simplified);
+
+            const accountFields = document.getElementById('accountSettingsFields');
+            const simplifiedFields = document.getElementById('simplifiedSettingsFields');
+            const accountTab = document.getElementById('settingsTab-account');
+            const ladderTab = document.getElementById('settingsTab-ladder');
+            if (accountFields) {
+                if (simplified) accountFields.setAttribute('hidden', '');
+                else accountFields.removeAttribute('hidden');
+            }
+            if (simplifiedFields) {
+                if (simplified) simplifiedFields.removeAttribute('hidden');
+                else simplifiedFields.setAttribute('hidden', '');
+            }
+            if (accountTab) accountTab.textContent = simplified ? 'Start size' : 'Account';
+            if (ladderTab) {
+                if (simplified) ladderTab.setAttribute('hidden', '');
+                else ladderTab.removeAttribute('hidden');
+            }
+            updateNextRiskTooltip(simplified);
+            updateInstructionsContent(simplified);
+        }
+
+        function setSimplifiedEnabled(enabled) {
+            localStorage.setItem('simplifiedMode', enabled ? 'enabled' : 'disabled');
+            const toggle = document.getElementById('simplifiedMode');
+            if (toggle) {
+                toggle.checked = !!enabled;
+                updateSwitchLabel(toggle);
+            }
+            updateUIForSimplified(!!enabled);
+            // Remap Ladder → Start size/Account when Simplified hides that tab
+            setSettingsTab(localStorage.getItem('settingsTab') || 'account');
+            calculate();
+        }
+
+        function loadSimplifiedPreference() {
+            // Default Off so existing Auto Ladder behavior stays
+            const enabled = localStorage.getItem('simplifiedMode') === 'enabled';
+            const toggle = document.getElementById('simplifiedMode');
+            if (toggle) {
+                toggle.checked = enabled;
+                updateSwitchLabel(toggle);
+            }
+            updateUIForSimplified(enabled);
+        }
+        // --- SIMPLIFIED MODE END ---
+
 
         const NUM_TRADES = 50;
         const INPUT_ELEMENT_IDS = [
             // Settings
-            'currentBalance', 'maxLossLimit', 'lossLockoutPercent', 'tradeRange', 'autoLadder', 
-            'minProfitToKeep', 'lockInPercent', 'roundDown', 'feePerContract',
+            'currentBalance', 'maxLossLimit', 'lossLockoutPercent',
+            'autoLadder', 'minProfitToKeep', 'lockInPercent', 'roundDown',
+            'simplifiedStartRisk',
             // R.E.A.L.I.S.T. Journal
             'ratingScore', 'ratingReason', 'earningsNote', 'alignmentNote', 'learningNote', 
             'improvementNote', 'sorryNote', 'tomorrowPlan',
@@ -393,17 +1226,105 @@
             'sessionDate'
         ];
 
-        // --- ACCORDION LOGIC ---
+        // --- HELP PANEL ---
+        const INSTRUCTIONS_SIMPLIFIED = `
+            <ol class="list-decimal list-inside space-y-1">
+                <li><strong>Set starting risk:</strong> In Start size, enter a trade size you’re comfortable risking on Trade 1.</li>
+                <li><strong>Take the next size:</strong> Use the sticky Next Risk value for your trade.</li>
+                <li><strong>After a win:</strong> Next risk becomes 25% of your current realized profit.</li>
+                <li><strong>After a loss:</strong> The session ends — stop trading for the day in this method.</li>
+                <li><strong>Log results:</strong> Enter P/L after each trade; the next row appears automatically.</li>
+                <li><strong>Optional journal:</strong> Toggle Journal on to add notes and the R.E.A.L.I.S.T. section.</li>
+                <li><strong>Save / export:</strong> Save keeps data in this browser. Export downloads a CSV.</li>
+            </ol>
+        `;
+        const INSTRUCTIONS_ADVANCED = `
+            <ol class="list-decimal list-inside space-y-1">
+                <li><strong>Set up your account:</strong> On the Account tab, enter Current Balance, Maximum Loss Limit, and Loss Lockout %.</li>
+                <li><strong>Check your limits:</strong> Trailing Drawdown and Daily Loss Lockout update from those inputs — they cap how much you can risk today.</li>
+                <li><strong>Ladder settings (optional):</strong> On the Ladder tab, configure Auto Ladder, Absolute Minimum Profit, and Risk % of profit to size the next trade from unlocked green.</li>
+                <li><strong>Sizing:</strong> On the Setting tab, choose round-down behavior if you want sizes snapped to whole dollars.</li>
+                <li><strong>Take the next size:</strong> Use the sticky Next Risk value for your trade.</li>
+                <li><strong>Log results:</strong> Enter P/L after each trade; the next row appears automatically.</li>
+                <li><strong>Optional journal:</strong> Toggle Journal on to add notes and the R.E.A.L.I.S.T. section.</li>
+                <li><strong>Save / export:</strong> Save keeps data in this browser. Export downloads a CSV.</li>
+            </ol>
+        `;
+
+        function updateInstructionsContent(simplified) {
+            const el = document.getElementById('instructionsContent');
+            if (!el) return;
+            el.innerHTML = simplified ? INSTRUCTIONS_SIMPLIFIED : INSTRUCTIONS_ADVANCED;
+        }
+
         function toggleInstructions() {
-            const content = document.getElementById('instructionsContent');
-            const arrow = document.getElementById('toggleArrow');
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                arrow.classList.add('rotate-180'); // Rotate arrow up
+            const box = document.getElementById('instructionsBox');
+            const btn = document.getElementById('howToUseBtn');
+            const isOpen = !box.classList.contains('hidden');
+            if (isOpen) {
+                box.classList.add('hidden');
+                btn.setAttribute('aria-expanded', 'false');
             } else {
-                content.classList.add('hidden');
-                arrow.classList.remove('rotate-180'); // Rotate arrow down
+                box.classList.remove('hidden');
+                btn.setAttribute('aria-expanded', 'true');
             }
+        }
+
+        // --- SETTINGS TABS ---
+        const SETTINGS_TABS = ['account', 'ladder', 'sizing'];
+
+        function setSettingsTab(tab) {
+            let selected = SETTINGS_TABS.includes(tab) ? tab : 'account';
+            if (selected === 'ladder' && isSimplifiedEnabled()) selected = 'account';
+            SETTINGS_TABS.forEach(name => {
+                const tabBtn = document.getElementById(`settingsTab-${name}`);
+                const pane = document.getElementById(`settingsPane-${name}`);
+                const isActive = name === selected;
+                if (tabBtn) tabBtn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                if (pane) {
+                    pane.classList.toggle('active', isActive);
+                    if (isActive) {
+                        pane.removeAttribute('hidden');
+                    } else {
+                        pane.setAttribute('hidden', '');
+                    }
+                }
+            });
+            localStorage.setItem('settingsTab', selected);
+        }
+
+        function loadSettingsTabPreference() {
+            const saved = localStorage.getItem('settingsTab');
+            let tab = SETTINGS_TABS.includes(saved) ? saved : 'account';
+            if (tab === 'ladder' && isSimplifiedEnabled()) tab = 'account';
+            setSettingsTab(tab);
+        }
+
+        // --- REALIST JOURNAL TABS ---
+        const REALIST_TABS = ['R', 'E', 'A', 'L', 'I', 'S', 'T'];
+
+        function setRealistTab(letter) {
+            const selected = REALIST_TABS.includes(letter) ? letter : 'R';
+            REALIST_TABS.forEach(name => {
+                const tabBtn = document.getElementById(`realistTab-${name}`);
+                const pane = document.getElementById(`realistPane-${name}`);
+                const isActive = name === selected;
+                if (tabBtn) tabBtn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                if (pane) {
+                    pane.classList.toggle('active', isActive);
+                    if (isActive) {
+                        pane.removeAttribute('hidden');
+                    } else {
+                        pane.setAttribute('hidden', '');
+                    }
+                }
+            });
+            localStorage.setItem('realistTab', selected);
+        }
+
+        function loadRealistTabPreference() {
+            const saved = localStorage.getItem('realistTab');
+            setRealistTab(REALIST_TABS.includes(saved) ? saved : 'R');
         }
 
         // --- SESSION MANAGEMENT LOGIC ---
@@ -431,7 +1352,7 @@
             INPUT_ELEMENT_IDS.forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
-                    sessionData[id] = element.value;
+                    sessionData[id] = getControlValue(element);
                 }
             });
 
@@ -452,7 +1373,7 @@
             // 4. The 'realistHistory' key is already on sessionData (from step 1) and is NOT touched.
             
             localStorage.setItem('tradingSessionData', JSON.stringify(sessionData));
-            alert("Session Saved! Your visible data and historical history are preserved.");
+            showToast("Session saved", "success");
         }
 
         function loadSession() {
@@ -462,9 +1383,31 @@
             INPUT_ELEMENT_IDS.forEach(id => {
                 const element = document.getElementById(id);
                 if (element && sessionData[id] !== undefined) {
-                    element.value = sessionData[id];
+                    setControlValue(element, sessionData[id]);
                 }
             });
+            // Migrate old decimal loss-lockout values (0.10) to whole percents (10)
+            const lossLockoutInput = document.getElementById('lossLockoutPercent');
+            if (lossLockoutInput) {
+                const lossLockoutValue = parseFloat(lossLockoutInput.value);
+                if (!Number.isNaN(lossLockoutValue) && lossLockoutValue > 0 && lossLockoutValue <= 1) {
+                    lossLockoutInput.value = String(lossLockoutValue * 100);
+                }
+            }
+            // Migrate legacy lock-in % → risk % of profit (75 lock-in → 25 risk; 0.75 → 25)
+            const lockInInput = document.getElementById('lockInPercent');
+            if (lockInInput) {
+                const lockInValue = parseFloat(lockInInput.value);
+                if (!Number.isNaN(lockInValue) && lockInValue > 0) {
+                    if (lockInValue <= 1) {
+                        lockInInput.value = String((1 - lockInValue) * 100);
+                    } else if (lockInValue > 50) {
+                        lockInInput.value = String(100 - lockInValue);
+                    }
+                }
+            }
+            // Keep switch labels in sync even when no saved value exists
+            document.querySelectorAll('input[type="checkbox"]').forEach(updateSwitchLabel);
             // If sessionDate isn't in saved data or is blank, set today's date
             if (!sessionData['sessionDate'] || sessionData['sessionDate'] === '') {
                  document.getElementById('sessionDate').value = new Date().toISOString().substring(0, 10);
@@ -496,7 +1439,7 @@
             const currentSessionData = {};
             INPUT_ELEMENT_IDS.forEach(id => {
                 const element = document.getElementById(id);
-                if (element) { currentSessionData[id] = element.value; }
+                if (element) { currentSessionData[id] = getControlValue(element); }
             });
 
             // B. Load existing history
@@ -565,11 +1508,8 @@
             // 4. Re-calculate to show the clean log and reset Trade #1's recommended size
             calculate();
 
-            alert("New Trading Day Started. The R.E.A.L.I.S.T. history is saved!");
+            showToast("New trading day started", "success");
         }
-
-        // --- FUNCTION REMOVED ---
-        // function clearAllSavedData() { ... }
 
         // --- END SESSION MANAGEMENT LOGIC ---
 
@@ -589,7 +1529,7 @@
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
             } else {
-                alert("Your browser does not support automatic downloads. Please copy the data manually.");
+                showToast("Downloads are not supported in this browser", "error");
             }
         }
         
@@ -608,18 +1548,20 @@
         function exportTradeLogToCSV() {
             let csv = [];
             const sessionDate = document.getElementById('sessionDate').value || 'N/A';
+            const includeJournalCols = isJournalEnabled();
 
             // 1. Define Header Row (Hardcoded for stability)
             const headerData = [
                 'Date',
                 'Trade #',
-                'Recommended TP/SL ($)',
+                'Recommended Risk ($)',
                 'Actual Result ($)',
                 'Realized P&L ($)',
                 'Lockout',
-                'Screenshot Link',
-                'Notes / Rationale'
             ];
+            if (includeJournalCols) {
+                headerData.push('Screenshot Link', 'Notes / Rationale');
+            }
             csv.push("--- CURRENT SESSION TRADE LOG ---");
             csv.push(headerData.map(getCleanedValue).join(',')); // Use helper for header
 
@@ -640,16 +1582,20 @@
                         resultInput.value,
                         document.getElementById(`running-pl-${i}`).innerText,
                         document.getElementById(`lockout-${i}`).innerText,
-                        document.getElementById(`screenshot-${i}`).value,
-                        document.getElementById(`notes-${i}`).value
                     ];
+                    if (includeJournalCols) {
+                        rowData.push(
+                            document.getElementById(`screenshot-${i}`).value,
+                            document.getElementById(`notes-${i}`).value
+                        );
+                    }
                     
                     csv.push(rowData.map(getCleanedValue).join(',')); // Use helper for data
                 }
             }
             
             if (tradesFound === 0) {
-                alert("No trade entries are visible in the log to export.");
+                showToast("No trade entries to export", "error");
                 return;
             }
 
@@ -657,7 +1603,7 @@
             const filename = `Current_Trade_Log_${sessionDate.replace(/-/g, '')}.csv`;
             
             downloadCSV(csvString, filename);
-            alert(`Downloaded ${tradesFound} visible trade entries for ${sessionDate}.`);
+            showToast(`Exported ${tradesFound} trades`, "success");
         }
 
         // --- (NEW) EXPORT CURRENT ON-SCREEN REALIST JOURNAL ---
@@ -693,7 +1639,7 @@
             const filename = `Current_REALIST_Journal_${sessionDate.replace(/-/g, '')}.csv`;
             
             downloadCSV(csvString, filename);
-            alert(`Downloaded current R.E.A.L.I.S.T. Journal entry for ${sessionDate}.`);
+            showToast("Journal exported", "success");
         }
         
         // --- CORE CALCULATION LOGIC ---
@@ -703,46 +1649,58 @@
         }
 
         function getBoolValue(id) {
-            return document.getElementById(id).value === 'true';
+            const element = document.getElementById(id);
+            if (!element) return false;
+            if (element.type === 'checkbox') return element.checked;
+            return element.value === 'true';
         }
         
-        function calculateContracts() {
-            const dollarRiskText = document.getElementById('nextTradeSize').textContent;
-            if (dollarRiskText === "LOCKED OUT") {
-                document.getElementById('numContracts').textContent = "N/A";
-                return;
-            }
+        function calculateRecommendedTpsl(rawRisk, roundDown) {
+            return Math.floor(Math.max(0, rawRisk) / roundDown) * roundDown;
+        }
 
-            const dollarRisk = parseFloat(dollarRiskText) || 0;
-            const tradeRange = getFloatValue('tradeRange');
-            const pointValue = 2; // Hardcoded for MNQ
-
-            const riskPerContract = tradeRange * pointValue;
-            
-            let numContracts = 0;
-            if (riskPerContract > 0) {
-                numContracts = Math.floor(dollarRisk / riskPerContract);
+        function getRawRisk({ tradeIndex, dailyLossLockout, prevRunningPL, autoLadder, minProfitToKeep, riskOfProfitPercent, simplifiedMode, simplifiedStartRisk }) {
+            if (simplifiedMode) {
+                if (tradeIndex === 1) {
+                    // Trade #1: user-chosen starting trade size
+                    return simplifiedStartRisk;
+                }
+                // After a win: risk 25% of current realized profit
+                return Math.max(0, prevRunningPL) * 0.25;
             }
-            document.getElementById('numContracts').textContent = numContracts;
+            if (tradeIndex === 1) {
+                // Trade #1: Always risk 50% of the daily lockout limit
+                return dailyLossLockout * 0.5;
+            }
+            // Only apply the profit-reinvestment (Ladder) logic if we are green AND
+            // the profit is equal to or greater than the absolute minimum profit to keep.
+            if (autoLadder && prevRunningPL > 0 && prevRunningPL >= minProfitToKeep) {
+                const rawRisk = prevRunningPL * riskOfProfitPercent;
+                // Never put Absolute minimum profit back at risk
+                return Math.max(0, Math.min(rawRisk, prevRunningPL - minProfitToKeep));
+            }
+            // Default logic: 50% of the remaining buffer to hit the daily lockout limit
+            return (dailyLossLockout + prevRunningPL) * 0.5;
         }
 
         function calculate() {
             // Get all parameters
             const currentBalance = getFloatValue('currentBalance');
             const maxLossLimit = getFloatValue('maxLossLimit');
-            const lossLockoutPercent = getFloatValue('lossLockoutPercent');
+            const lossLockoutPercent = getFloatValue('lossLockoutPercent') / 100;
             const roundDown = getFloatValue('roundDown');
+            const simplifiedMode = isSimplifiedEnabled();
+            const simplifiedStartRisk = getFloatValue('simplifiedStartRisk');
             const autoLadder = getBoolValue('autoLadder');
             const minProfitToKeep = getFloatValue('minProfitToKeep');
-            const lockInPercent = getFloatValue('lockInPercent');
-            const feePerContract = getFloatValue('feePerContract');
+            const riskOfProfitPercent = getFloatValue('lockInPercent') / 100;
 
-            // Initial calculations
+            // Initial calculations (account-derived; unused for Simplified sizing/lockout)
             const fullStack = currentBalance - maxLossLimit;
             const dailyLossLockout = fullStack * lossLockoutPercent;
             
-            document.getElementById('fullStack').textContent = fullStack.toFixed(2);
-            document.getElementById('dailyLossLockout').textContent = `-${dailyLossLockout.toFixed(2)}`;
+            document.getElementById('fullStack').textContent = formatMoney(fullStack);
+            document.getElementById('dailyLossLockout').textContent = formatMoney(-dailyLossLockout);
             
             // BUG FIX: Reset all rows before recalculating to handle corrections
             for (let j = 1; j <= NUM_TRADES; j++) {
@@ -764,43 +1722,23 @@
 
                 let recommendedTpsl = 0;
                 if (!isLockedOut) {
-                    const tradeRange = getFloatValue('tradeRange');
-                    const pointValue = 2; // Hardcoded
-                    const riskPerContract = tradeRange * pointValue;
-
-                    let rawRisk = 0;
-                    
-                    // --- CORRECTED WAGERING LOGIC ---
-                    if (i === 1) {
-                        // Trade #1: Always risk 50% of the daily lockout limit
-                        rawRisk = dailyLossLockout * 0.5;
-                    } 
-                    // FIX: Only apply the profit-reinvestment (Ladder) logic if we are green AND 
-                    // the profit is equal to or greater than the absolute minimum profit to keep.
-                    else if (autoLadder && prevRunningPL > 0 && prevRunningPL >= minProfitToKeep) {
-                        const profitToRisk = prevRunningPL - Math.max(minProfitToKeep, prevRunningPL * lockInPercent);
-                        rawRisk = profitToRisk;
-                    } 
-                    else {
-                        // Default logic: 50% of the remaining buffer to hit the daily lockout limit
-                        rawRisk = (dailyLossLockout + prevRunningPL) * 0.5;
-                    }
-                    // ---------------------------------
-
-                    let numContractsForFee = 0;
-                    if (riskPerContract > 0) {
-                        numContractsForFee = Math.floor(rawRisk / riskPerContract);
-                    }
-                    const totalFee = numContractsForFee * feePerContract * 2; // * 2 for entry/exit
-
-                    const finalRisk = rawRisk - totalFee;
-                    recommendedTpsl = Math.floor(Math.max(0, finalRisk) / roundDown) * roundDown;
+                    const rawRisk = getRawRisk({
+                        tradeIndex: i,
+                        dailyLossLockout,
+                        prevRunningPL,
+                        autoLadder,
+                        minProfitToKeep,
+                        riskOfProfitPercent,
+                        simplifiedMode,
+                        simplifiedStartRisk,
+                    });
+                    recommendedTpsl = calculateRecommendedTpsl(rawRisk, roundDown);
                 }
                 recommendedTpslSpan.textContent = recommendedTpsl.toFixed(2);
                 
                 if (!isLockedOut && !nextTradeSizeFound) {
                     if (resultInput.value.trim() === '') {
-                       document.getElementById('nextTradeSize').textContent = recommendedTpsl.toFixed(2);
+                       setNextTradeDisplay(recommendedTpsl.toFixed(2), false);
                        nextTradeSizeFound = true; 
                     }
                 }
@@ -813,13 +1751,21 @@
                 runningPlSpan.classList.toggle('loss-red', runningPL < 0);
 
                 let lockoutMsg = "";
-                if (dailyLossLockout > 0 && runningPL <= -dailyLossLockout) {
-                    lockoutMsg = "LOCKOUT (Daily Loss)";
-                    isLockedOut = true;
-                } else if (autoLadder && prevRunningPL > 0 && actualResult < 0 && prevRunningPL >= minProfitToKeep) {
-                    // Ladder Loss Lockout only applies if we were in the aggressive profit-reinvestment mode
-                    lockoutMsg = "LOCKOUT (Ladder Loss)";
-                    isLockedOut = true;
+                if (resultInput.value.trim() !== '') {
+                    if (simplifiedMode) {
+                        // Any loss ends the session; account daily lockout does not apply
+                        if (actualResult < 0) {
+                            lockoutMsg = "LOCKOUT (Session End)";
+                            isLockedOut = true;
+                        }
+                    } else if (dailyLossLockout > 0 && runningPL <= -dailyLossLockout) {
+                        lockoutMsg = "LOCKOUT (Daily Loss)";
+                        isLockedOut = true;
+                    } else if (autoLadder && prevRunningPL > 0 && actualResult < 0 && prevRunningPL >= minProfitToKeep) {
+                        // Ladder Loss Lockout only applies if we were in the aggressive profit-reinvestment mode
+                        lockoutMsg = "LOCKOUT (Ladder Loss)";
+                        isLockedOut = true;
+                    }
                 }
                 lockoutSpan.textContent = lockoutMsg;
                 lockoutSpan.classList.add('lockout-red');
@@ -833,41 +1779,27 @@
             }
             
             if (isLockedOut) {
-                document.getElementById('nextTradeSize').textContent = "LOCKED OUT";
-                document.getElementById('nextTradeSize').parentElement.classList.add('bg-red-600');
-                document.getElementById('nextTradeSize').parentElement.classList.remove('bg-blue-600');
+                setNextTradeDisplay("LOCKED OUT", true);
             } else {
-                document.getElementById('nextTradeSize').parentElement.classList.remove('bg-red-600');
-                document.getElementById('nextTradeSize').parentElement.classList.add('bg-blue-600');
                 if (!nextTradeSizeFound) {
                     // Logic for the next trade size if all 50 log rows are filled
-                    const lastRunningPL = parseFloat(document.getElementById(`running-pl-${NUM_TRADES}`).textContent) || 0;
-                    const tradeRange = getFloatValue('tradeRange');
-                    const pointValue = 2; // Hardcoded
-                    const riskPerContract = tradeRange * pointValue;
-                    
-                    let rawRisk = 0;
-
-                    if (autoLadder && lastRunningPL > 0 && lastRunningPL >= minProfitToKeep) {
-                        const profitToRisk = lastRunningPL - Math.max(minProfitToKeep, lastRunningPL * lockInPercent);
-                        rawRisk = profitToRisk;
-                    } else {
-                        rawRisk = (dailyLossLockout + lastRunningPL) * 0.5;
-                    }
-
-                    let numContractsForFee = 0;
-                    if (riskPerContract > 0) {
-                        numContractsForFee = Math.floor(rawRisk / riskPerContract);
-                    }
-                    const totalFee = numContractsForFee * feePerContract * 2; // * 2 for entry/exit
-
-                    const finalRisk = rawRisk - totalFee;
-                    const finalTradeSize = Math.floor(Math.max(0, finalRisk) / roundDown) * roundDown;
-                    document.getElementById('nextTradeSize').textContent = finalTradeSize.toFixed(2);
+                    const lastRunningPL = parseFloat(document.getElementById(`running-pl-${NUM_TRADES}`).textContent.replace(/[^0-9.-]/g, '')) || 0;
+                    const rawRisk = getRawRisk({
+                        tradeIndex: NUM_TRADES + 1,
+                        dailyLossLockout,
+                        prevRunningPL: lastRunningPL,
+                        autoLadder,
+                        minProfitToKeep,
+                        riskOfProfitPercent,
+                        simplifiedMode,
+                        simplifiedStartRisk,
+                    });
+                    const finalTradeSize = calculateRecommendedTpsl(rawRisk, roundDown);
+                    setNextTradeDisplay(finalTradeSize.toFixed(2), false);
                 }
             }
-            
-            calculateContracts();
+
+            updateTradeLogVisibility();
         }
 
         function createTradeRows() {
@@ -878,33 +1810,103 @@
                 row.innerHTML = `
                     <td class="table-cell font-medium">${i}</td>
                     <td class="table-cell font-mono"><span id="recommended-tpsl-${i}">0.00</span></td>
-                    <td class="table-cell bg-blue-50">
+                    <td class="table-cell">
                         <input type="number" id="result-${i}" class="result-input font-mono" placeholder="0.00" step="0.01">
                     </td>
                     <td class="table-cell font-mono font-semibold"><span id="running-pl-${i}">0.00</span></td>
                     <td class="table-cell"><span id="lockout-${i}"></span></td>
-                    <td class="table-cell">
+                    <td class="table-cell journal-only">
                         <input type="text" id="screenshot-${i}" class="journal-input" placeholder="Paste link here..." maxlength="200">
                     </td>
-                    <td class="table-cell">
+                    <td class="table-cell journal-only">
                         <input type="text" id="notes-${i}" class="journal-input" placeholder="Market structure, setup type, etc..." maxlength="200">
                     </td>
                 `;
                 tbody.appendChild(row);
             }
+            updateTradeLogVisibility();
+        }
+
+        function formatMoney(value) {
+            const num = Number(value) || 0;
+            const abs = Math.abs(num).toFixed(2);
+            return (num < 0 ? "-$" : "$") + abs;
+        }
+
+        function setNextTradeDisplay(value, lockedOut) {
+            const el = document.getElementById('nextTradeSize');
+            const card = document.getElementById('nextTradeCard');
+            if (!el || !card) return;
+            if (lockedOut || value === "LOCKED OUT") {
+                el.textContent = "Locked out";
+                card.classList.add('is-locked');
+            } else {
+                const num = parseFloat(value);
+                el.textContent = Number.isNaN(num) ? value : formatMoney(num);
+                card.classList.remove('is-locked');
+            }
+        }
+
+        function updateTradeLogVisibility() {
+            let firstEmpty = NUM_TRADES + 1;
+            for (let i = 1; i <= NUM_TRADES; i++) {
+                const resultInput = document.getElementById(`result-${i}`);
+                if (resultInput && resultInput.value.trim() === '' && firstEmpty === NUM_TRADES + 1) {
+                    firstEmpty = i;
+                }
+            }
+            const visibleThrough = Math.min(NUM_TRADES, Math.max(firstEmpty, 1));
+            for (let i = 1; i <= NUM_TRADES; i++) {
+                const row = document.getElementById(`trade-row-${i}`);
+                if (!row) continue;
+                row.classList.toggle('row-hidden', i > visibleThrough);
+                row.classList.toggle('is-active-row', i === firstEmpty && firstEmpty <= NUM_TRADES);
+            }
+            const meta = document.getElementById('tradeLogMeta');
+            if (meta) {
+                const filled = Math.max(0, firstEmpty - 1);
+                meta.textContent = filled === 0
+                    ? "Showing your next trade row"
+                    : `Showing ${visibleThrough} of ${NUM_TRADES} rows · ${filled} logged`;
+            }
+        }
+
+        function showToast(message, type = "info") {
+            const host = document.getElementById('toastHost');
+            if (!host) {
+                window.alert(message);
+                return;
+            }
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            host.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 220);
+            }, 2400);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadDarkModePreference(); // Load dark mode preference
+            loadDarkModePreference();
+            loadJournalPreference();
+            loadSimplifiedPreference();
+            loadSettingsTabPreference();
+            loadRealistTabPreference();
             createTradeRows();
-            loadSession(); // Load saved session data
-            
-            // Run calculation immediately after loading default/saved settings
-            calculate(); 
+            loadSession();
+            // Re-apply Simplified UI after session restore (ladder inputs may have been re-enabled)
+            updateUIForSimplified(isSimplifiedEnabled());
+            calculate();
 
-            // Attach listeners AFTER initial load and calculation
             const inputs = document.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => input.addEventListener('input', calculate));
+            inputs.forEach(input => {
+                if (input.id === 'journalEnabled' || input.id === 'simplifiedMode') return;
+                const eventName = input.type === 'checkbox' ? 'change' : 'input';
+                input.addEventListener(eventName, calculate);
+            });
+            document.querySelectorAll('input[type="checkbox"]').forEach(updateSwitchLabel);
         });
     </script>
 </body>
